@@ -31,21 +31,16 @@ public class Environment {
 			throw new HbciException("blz not provided, cannot setup environment");
 		}
 		// HBCI4Java initialisieren
-		try {
-			HBCICallback callback = new RlmHbciCallback(userRequest);
-//			HBCICallback callback = new HBCICallbackConsole();
-			Properties properties = HBCIUtils.loadPropertiesFile(new FileSystemClassLoader(), Constants.HBCI_PROPERTYFILE);
-			
-			//TODO this is crap -> beautify
-			URL url = this.getClass().getResource("/passports/" + userid + Constants.SUFFIX_PIN_TAN_USER_PASSPORTS);
-			String file = url.toString().replace("file:/", "");
-			properties.put(Constants.KEY_PATH_PASSPORTS, file);
-			
-//			HBCIUtils.init(properties, callback);
-			HBCIUtils.initThread(properties, callback);
-		} catch (MalformedURLException e) {
-			throw new HbciException(e);
-		}
+		HBCICallback callback = new RlmHbciCallback(userRequest);
+//		HBCICallback callback = new HBCICallbackConsole();
+		Properties properties = HBCIUtils.loadPropertiesFile(this.getClass().getClassLoader(), Constants.HBCI_PROPERTYFILE);
+		
+		//TODO this is crap -> beautify
+		String file = Constants.PATH_USER_PASSPORTS + userid + Constants.SUFFIX_PIN_TAN_USER_PASSPORTS;
+		properties.put(Constants.KEY_PATH_PASSPORTS, file);
+		
+//		HBCIUtils.init(properties, callback);
+		HBCIUtils.initThread(properties, callback);
 	}
 	
 	public UserRequest getUserRequest(){

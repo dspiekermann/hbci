@@ -265,6 +265,17 @@
 	    	<artifactId>hibernate-validator</artifactId>
 	    	<version>4.2.0.Final</version>
 	    </dependency>
+	    <dependency>
+	    	<groupId>de.rlm</groupId>
+	    	<artifactId>hbci</artifactId>
+	    	<version>0.0.1-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>  <!-- declare the exclusion here -->
+          <groupId>de.rlm</groupId>
+          <artifactId>banking-portal</artifactId>
+        </exclusion>
+      </exclusions> 	    	
+	    </dependency>
    </dependencies>
 	<build>
 		<finalName>banking-portal</finalName>

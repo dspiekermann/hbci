@@ -12,6 +12,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
 
+import de.rlm.hbci.HbciApi;
+import de.rlm.hbci.HbciException;
+import de.rlm.hbci.UserRequest;
+import de.rlm.hbci.UserRequestImpl;
+
 public class HbciAuthenticationProvider implements AuthenticationProvider {
 	
 	@Override
@@ -19,8 +24,14 @@ public class HbciAuthenticationProvider implements AuthenticationProvider {
 		final String userid = authentication.getName();
 		String password = (String) authentication.getCredentials();
 		
-		if (!"test".equals(password)){
-			throw new BadCredentialsException("wrong password");
+		//TODO where to get the blz
+		UserRequest userRequest = new UserRequestImpl("37050198", userid, password);
+		HbciApi hbci = HbciApi.getInstance(userRequest);
+		
+		try {
+			hbci.getKontoAll();
+		} catch (HbciException e) {
+			throw new BadCredentialsException(e.getMessage());
 		}
 		
 		GrantedAuthority role = new GrantedAuthorityImpl("ROLE_USER");

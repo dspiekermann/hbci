@@ -3,6 +3,7 @@
 	<name>banking-portal</name>
 	<comment></comment>
 	<projects>
+		<project>hbci</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
