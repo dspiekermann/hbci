@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html lang="#{languageBean.localeCode}" 
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+   	xmlns:h="http://java.sun.com/jsf/html"
+   	xmlns:ui="http://java.sun.com/jsf/facelets"
+   	xmlns:p="http://primefaces.org/ui">
+
+  <h:head>
+    <title>
+      <ui:insert name="windowTitle">
+        #{layout.title}
+      </ui:insert>
+    </title> 
+
+<!-- 
+    <h:outputScript library="javascript" name="util.js" target="head"/>
+ -->          
+    <h:outputStylesheet library="css" name="base.css" target="head"/>
+    <h:outputStylesheet library="css" name="banking-portal.css" target="head"/>
+    	    
+  </h:head>
+  
+  <h:body>  
+  
+  	<f:view locale="#{languageBean.locale}" />
+  
+  	<p:layout fullPage="true">
+  	
+	    <p:layoutUnit position="north" height="90">  
+			<div id="header">
+		      	<ui:insert name="header"/>
+			</div>
+	    </p:layoutUnit>  
+	      
+	    <p:layoutUnit position="south" height="75">  
+			<div id="footer">
+		        <ui:insert name="footer"/>
+			</div>
+	    </p:layoutUnit>  
+	      
+	    <p:layoutUnit position="west" width="250">  
+			<div id="menu">
+		        <ui:insert name="menu"/>
+			</div>
+	    </p:layoutUnit>  
+
+	    <p:layoutUnit position="east" width="250">  
+			<div id="sidebar">
+		        <ui:insert name="sidebar"/>
+			</div>
+	    </p:layoutUnit>  
+	      
+	    <p:layoutUnit position="center" scrollable="true">  
+			<div id="content">
+		        <ui:insert name="content"/>
+			</div>
+	    </p:layoutUnit>  
+    
+    </p:layout>  
+  
+  </h:body> 
+</html>

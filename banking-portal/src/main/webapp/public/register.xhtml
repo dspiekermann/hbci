@@ -1,0 +1,70 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/defaultLayout.xhtml">
+
+	<ui:define name="content">
+		<h:form>
+			<p:ajaxStatus style="width:16px;height:16px;">
+				<f:facet name="start">
+					<h:graphicImage value="../design/ajaxloading.gif" />
+				</f:facet>
+
+				<f:facet name="complete">
+					<h:outputText value="" />
+				</f:facet>
+			</p:ajaxStatus>
+
+			<p:panel id="loginPanel" header="Register">
+
+				<p:messages id="formMessages" />
+
+				<h:panelGrid columns="3">
+					<h:outputLabel for="username" value="Username: " />
+					<p:inputText id="username" value="#{registerBean.username}" required="true" requiredMessage="Username is mandatory">
+						<f:ajax type="postValidate" execute="@this" event="blur" listener="#{registerBean.validateUsername}" render="usernameMessage"/>
+					</p:inputText>
+					<p:message id="usernameMessage" for="username"  />
+
+					<h:outputLabel for="email" value="E-Mail: " />
+					<p:inputText id="email" value="#{registerBean.email}" required="true" requiredMessage="E-Mail is mandatory">
+						<f:ajax type="postValidate" execute="@this" event="blur" listener="#{registerBean.validateEmail}" render="emailMessage"/>
+					</p:inputText>
+					<p:message id="emailMessage" for="email" />
+
+					<h:outputLabel for="name" value="Name: " />
+					<p:inputText id="name" value="#{registerBean.name}" required="true" requiredMessage="Name is mandatory">
+						<f:ajax execute="@this" event="blur" render="nameMessage"/>
+					</p:inputText>
+					<p:message id="nameMessage" for="name"  />
+
+					<h:outputLabel for="surname" value="Surname: " />
+					<p:inputText id="surname" value="#{registerBean.surname}" required="true" requiredMessage="Surname is mandatory">
+						<f:ajax execute="@this" event="blur" render="surnameMessage"/>
+					</p:inputText>
+					<p:message id="surnameMessage" for="surname"  />
+
+					<h:outputLabel for="password" value="Choose a password: " />
+					<p:password id="password" value="#{registerBean.password}" required="true" requiredMessage="Password is mandatory">
+						<f:ajax type="postValidate" execute="password repassword" event="blur" listener="#{registerBean.validatePasswords}" render="passwordMessage"/>
+					</p:password>					
+					<p:message id="passwordMessage" for="password" />
+
+					<h:outputLabel for="repassword" value="Re-Type your password: " />
+					<p:password id="repassword" value="#{registerBean.repassword}" required="true" requiredMessage="Retyping the password is mandatory">
+						<f:ajax type="postValidate" execute="password repassword" event="blur" listener="#{registerBean.validatePasswords}" render="passwordMessage repasswordMessage"/>
+					</p:password>
+					<p:message id="repasswordMessage" for="repassword"  />
+
+				</h:panelGrid>
+				
+				<p:commandButton value="Register" actionListener="#{registerBean.register}" update="loginPanel">
+				</p:commandButton> 				
+			</p:panel>
+
+		</h:form>
+	</ui:define>
+
+</ui:composition>

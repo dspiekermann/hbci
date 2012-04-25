@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+    	<param name="Target" value="System.out"/>  
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c{1} %x - %m%n"/>
+        </layout>
+    </appender>
+    
+    <appender name="rollfile_basic" class="org.apache.log4j.rolling.RollingFileAppender">
+		<param name="file" value="h:/temp/log/basic.log" />
+		<param name="append" value="true" />
+		<param name="encoding" value="UTF-8" />
+	
+		<rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
+			<param name="FileNamePattern" value="h:/temp/log/basic.%d.log.gz" />
+		</rollingPolicy>
+	
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c{1} %x - %m%n" />
+		</layout>
+    </appender>
+    
+    <appender name="rollfile_framework" class="org.apache.log4j.rolling.RollingFileAppender">
+		<param name="file" value="h:/temp/log/framework.log" />
+		<param name="append" value="true" />
+		<param name="encoding" value="UTF-8" />
+	
+		<rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
+			<param name="FileNamePattern" value="h:/temp/log/framework.%d.log.gz" />
+		</rollingPolicy>
+	
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c{1} %x - %m%n" />
+		</layout>
+    </appender>
+    
+
+    <category name="org.apache" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="console" />  
+    </category>
+
+    <category name="org.springframework" additivity="false">  
+	    <priority value="info" />  
+	    <appender-ref ref="console" />
+    </category>  
+
+    <category name="org.springframework.security" additivity="false">  
+	    <priority value="info" />  
+	    <appender-ref ref="console" />
+    </category>  
+    
+    <root>
+        <level value="debug"/>
+        <appender-ref ref="console"/>
+    </root>
+</log4j:configuration>

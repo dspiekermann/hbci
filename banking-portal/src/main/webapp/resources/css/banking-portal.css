@@ -1,0 +1,18 @@
+#top-header-left {
+	float: left;
+	width: 33%
+}
+#top-header-center {
+	float: left;
+}
+#top-header-right {
+	float: right;
+	width: 33%
+}
+
+#top-header{
+	height: 50px;
+}
+	
+#bottom-header{
+}

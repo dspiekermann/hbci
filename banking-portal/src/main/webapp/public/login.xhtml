@@ -1,0 +1,49 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jstl/core_rt"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/defaultLayout.xhtml">
+
+	<ui:define name="content">
+
+		<f:metadata>
+		    <f:viewParam name="error" value="#{loginBean.errorCode}" />
+		    <f:event type="preRenderView" listener="#{loginBean.checkErrors}" />
+		</f:metadata>
+		
+		<p:messages />
+		
+		<h:form	id="loginForm" prependId="false">
+			
+			<p:panel header="#{msg['label.login']}">
+				<h:panelGrid columns="2" cellspacing="5" frame="box">
+
+					<h:outputLabel value="#{msg['label.username']}:" />
+					<p:inputText id="j_username" tabindex="1" />
+					<h:outputLabel value="#{msg['label.password']}:" />
+					<p:inputText id="j_password" tabindex="2" type="password"/>
+					<h:outputLabel value="" />
+					
+					<h:commandButton
+						type="submit"
+						id="login"
+						action="#{loginBean.doLogin}"
+						value="#{msg['label.login']}" />
+						
+					<label for="_spring_security_remember_me"> 
+						<h:outputText value="#{msg['label.rememberme']}" /> 
+					</label>
+					
+					<h:selectBooleanCheckbox id="_spring_security_remember_me" />
+					
+				</h:panelGrid>
+			</p:panel>
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>
+

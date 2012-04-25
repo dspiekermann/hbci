@@ -1,0 +1,27 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"      
+    xmlns:h="http://java.sun.com/jsf/html"
+   	xmlns:ui="http://java.sun.com/jsf/facelets"
+    template="/templates/layout.xhtml">
+
+  <ui:define name="header">
+    <ui:include src="/sections/default/header.xhtml"/>
+  </ui:define>
+   
+  <ui:define name="menu">
+    <ui:include src="/sections/default/menu.xhtml"/>
+  </ui:define>
+
+  <ui:define name="content">
+  	<ui:insert name="content"/>
+  </ui:define>
+     
+  <ui:define name="sidebar">
+    <ui:include src="/sections/default/sidebar.xhtml"/>
+  </ui:define>
+
+  <ui:define name="footer"> 
+    <ui:include src="/sections/default/footer.xhtml"/>           
+  </ui:define>
+
+</ui:composition>
