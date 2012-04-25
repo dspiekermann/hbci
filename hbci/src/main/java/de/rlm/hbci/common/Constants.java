@@ -15,7 +15,7 @@ public interface Constants {
 	public static final String COUNTRY = "DE";
 	
 	public static final String KEY_PATH_PASSPORTS = "client.passport.PinTan.filename";
-	public static final String PATH_USER_PASSPORTS = "C:/Java/workspaces/test/hbci/src/main/resources/passports/";
+//	public static final String PATH_USER_PASSPORTS = "C:/Java/workspaces/test/hbci/src/main/resources/passports/";
 	public static final String SUFFIX_PIN_TAN_USER_PASSPORTS = "_pintan_hbci4java";
 	
 }

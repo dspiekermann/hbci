@@ -1,6 +1,7 @@
 package de.rlm.hbci;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
 import org.kapott.hbci.callback.HBCICallback;
@@ -34,7 +35,11 @@ public class Environment {
 			HBCICallback callback = new RlmHbciCallback(userRequest);
 //			HBCICallback callback = new HBCICallbackConsole();
 			Properties properties = HBCIUtils.loadPropertiesFile(new FileSystemClassLoader(), Constants.HBCI_PROPERTYFILE);
-			properties.put(Constants.KEY_PATH_PASSPORTS, Constants.PATH_USER_PASSPORTS + userid + Constants.SUFFIX_PIN_TAN_USER_PASSPORTS);
+			
+			//TODO this is crap -> beautify
+			URL url = this.getClass().getResource("/passports/" + userid + Constants.SUFFIX_PIN_TAN_USER_PASSPORTS);
+			String file = url.toString().replace("file:/", "");
+			properties.put(Constants.KEY_PATH_PASSPORTS, file);
 			
 //			HBCIUtils.init(properties, callback);
 			HBCIUtils.initThread(properties, callback);

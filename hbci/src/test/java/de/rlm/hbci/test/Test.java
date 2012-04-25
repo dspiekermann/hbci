@@ -3,7 +3,6 @@ package de.rlm.hbci.test;
 import java.util.List;
 
 import junit.framework.TestCase;
-
 import de.rlm.hbci.GVResult;
 import de.rlm.hbci.GVThread;
 import de.rlm.hbci.HbciApi;
@@ -11,7 +10,6 @@ import de.rlm.hbci.HbciException;
 import de.rlm.hbci.SessionFactory;
 import de.rlm.hbci.UserRequest;
 import de.rlm.hbci.gv.GVKontoAll;
-import de.rlm.hbci.gv.GVUmsatz;
 import de.rlm.hbci.gv.data.Konto;
 import de.rlm.hbci.gv.data.Umsatz;
 
@@ -46,19 +44,6 @@ public class Test extends TestCase {
 			return "37050198";
 		}
 	};
-	private UserRequest userRequestMe = new UserRequest() {
-		public String getUserId() {
-			return "1900104959";
-		}
-
-		public String getPassword() {
-			return "07029";
-		}
-
-		public String getBlz() {
-			return "37050198";
-		}
-	};
 
 	@Override
 	protected void setUp() throws Exception {
@@ -75,7 +60,6 @@ public class Test extends TestCase {
 		super.tearDown();
 		SessionFactory.destroySession(userRequestComso);
 		SessionFactory.destroySession(userRequest6123);
-		SessionFactory.destroySession(userRequestMe);
 		
 		//same nr of active threads
 		ThreadGroup threadGroupEnd = Thread.currentThread().getThreadGroup();
