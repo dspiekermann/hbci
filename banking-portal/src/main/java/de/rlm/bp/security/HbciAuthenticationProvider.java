@@ -12,10 +12,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
 
+import de.rlm.hbci.GVResult;
 import de.rlm.hbci.HbciApi;
 import de.rlm.hbci.HbciException;
 import de.rlm.hbci.UserRequest;
 import de.rlm.hbci.UserRequestImpl;
+import de.rlm.hbci.gv.data.User;
 
 public class HbciAuthenticationProvider implements AuthenticationProvider {
 	
@@ -28,8 +30,25 @@ public class HbciAuthenticationProvider implements AuthenticationProvider {
 		UserRequest userRequest = new UserRequestImpl("37050198", userid, password);
 		HbciApi hbci = HbciApi.getInstance(userRequest);
 		
+		User user = null;
+		
+		GVResult<User> result = null;
 		try {
-			hbci.getKontoAll();
+			result = hbci.login();
+			
+			if (result!=null){
+				if (!result.isOk()){
+					throw new BadCredentialsException(result.getErrorMessage());
+				}
+				List<User> users = result.getResult();
+				if (users!=null && users.size()>0){
+					user = users.get(0);
+				}
+			}
+			
+			if (user==null){
+				throw new BadCredentialsException("cannot authenticate user");
+			}
 		} catch (HbciException e) {
 			throw new BadCredentialsException(e.getMessage());
 		}

@@ -9,9 +9,10 @@ public class Konto extends HbciData {
 	private String merkmal = null;
 	private String land = null;
 	private String waehrung = null;
+	private String kontoinhaber = null;
 	
 	
-	public Konto(String blz, String kontoNr, String iban, String type, String merkmal, String land, String waehrung) {
+	public Konto(String blz, String kontoNr, String iban, String type, String merkmal, String kontoinhaber, String land, String waehrung) {
 		super();
 		this.blz = blz;
 		this.kontoNr = kontoNr;
@@ -20,6 +21,7 @@ public class Konto extends HbciData {
 		this.merkmal = merkmal;
 		this.land = land;
 		this.waehrung = waehrung;
+		this.kontoinhaber = kontoinhaber;
 	}
 	
 	public String getBlz() {
@@ -43,11 +45,14 @@ public class Konto extends HbciData {
 	public String getWaehrung() {
 		return waehrung;
 	}
+	public String getKontoinhaber() {
+		return kontoinhaber;
+	}
 
 	@Override
 	public String toString() {
 		return "Konto [blz=" + blz + ", kontoNr=" + kontoNr + ", iban=" + iban + ", type=" + type + ", merkmal=" + merkmal + ", land=" + land + ", waehrung="
-				+ waehrung + "]";
+				+ waehrung + ", kontoinhaber=" + kontoinhaber + "]";
 	}
 
 	@Override
@@ -57,6 +62,7 @@ public class Konto extends HbciData {
 		result = prime * result + ((blz == null) ? 0 : blz.hashCode());
 		result = prime * result + ((iban == null) ? 0 : iban.hashCode());
 		result = prime * result + ((kontoNr == null) ? 0 : kontoNr.hashCode());
+		result = prime * result + ((kontoinhaber == null) ? 0 : kontoinhaber.hashCode());
 		result = prime * result + ((land == null) ? 0 : land.hashCode());
 		result = prime * result + ((merkmal == null) ? 0 : merkmal.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -88,6 +94,11 @@ public class Konto extends HbciData {
 				return false;
 		} else if (!kontoNr.equals(other.kontoNr))
 			return false;
+		if (kontoinhaber == null) {
+			if (other.kontoinhaber != null)
+				return false;
+		} else if (!kontoinhaber.equals(other.kontoinhaber))
+			return false;
 		if (land == null) {
 			if (other.land != null)
 				return false;
@@ -110,7 +121,6 @@ public class Konto extends HbciData {
 			return false;
 		return true;
 	}
-	
 
 
 }

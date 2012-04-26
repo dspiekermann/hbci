@@ -25,6 +25,7 @@ public class GVKontoAll extends GVAbstract<de.rlm.hbci.gv.data.Konto> {
 						k.number,
 						k.iban,
 						k.type,
+						k.name,
 						k.subnumber,
 						k.country,
 						k.curr));

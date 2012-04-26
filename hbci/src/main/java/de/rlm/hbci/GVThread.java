@@ -28,6 +28,8 @@ public class GVThread<T extends Object> {
 					session = SessionFactory.getOrCreateSession(userRequest);
 					GVResult<T> result = gv.execute(session);
 					container.exchange(result);
+				} catch (RuntimeException e1){
+					throw e1;
 				} catch (Exception e){
 					throw new RuntimeException(e);
 				} finally {

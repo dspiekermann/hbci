@@ -8,10 +8,12 @@ import org.kapott.hbci.GV.HBCIJob;
 import org.kapott.hbci.GV_Result.GVRKUms;
 import org.kapott.hbci.manager.HBCIHandler;
 import org.kapott.hbci.status.HBCIExecStatus;
+import org.kapott.hbci.status.HBCIStatus;
 import org.kapott.hbci.structures.Konto;
 import org.kapott.hbci.structures.Value;
 
 import de.rlm.hbci.GVResult;
+import de.rlm.hbci.GVResultError;
 import de.rlm.hbci.GVResultImpl;
 import de.rlm.hbci.HbciException;
 import de.rlm.hbci.Session;
@@ -44,7 +46,7 @@ public class GVUmsatz extends GVAbstract<Umsatz> {
 			auszug.addToQueue();
 
 			// alle Jobs in der Job-Warteschlange ausführen
-			HBCIExecStatus ret = hbciHandle.execute();
+			final HBCIExecStatus ret = hbciHandle.execute();
 
 			GVRKUms result = (GVRKUms) auszug.getJobResult();
 
@@ -87,13 +89,15 @@ public class GVUmsatz extends GVAbstract<Umsatz> {
 				}
 			}
 
+			return new GVResultGVKUms(ret, umsatzList);
 		}
-		return new GVResultGVKUms(umsatzList);
+		
+		return new GVResultError<Umsatz>("konto for kontoNr " + kontoNr + " does not exists") {};
 	}
 
 	private class GVResultGVKUms extends GVResultImpl<Umsatz> {
-		public GVResultGVKUms(List<Umsatz> result) {
-			super(result);
+		public GVResultGVKUms(HBCIExecStatus status, List<Umsatz> result) {
+			super(status, result);
 		}
 	}
 

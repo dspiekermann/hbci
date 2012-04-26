@@ -7,6 +7,9 @@
         <dependent-module archiveName="hbci.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hbci/hbci">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="hbci4java.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hbci4java/hbci4java">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="banking-portal"/>
         <property name="java-output-path" value="/banking-portal/target/classes"/>
     </wb-module>
