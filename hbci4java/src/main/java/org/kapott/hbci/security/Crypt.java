@@ -1,5 +1,5 @@
 
-/*  $Id: Crypt.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: Crypt.java,v 1.1 2011/05/04 22:38:03 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -26,12 +26,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.kapott.hbci.exceptions.HBCI_Exception;
-import org.kapott.hbci.manager.HBCIKernelImpl;
 import org.kapott.hbci.manager.HBCIUtils;
 import org.kapott.hbci.manager.HBCIUtilsInternal;
 import org.kapott.hbci.manager.IHandlerData;
 import org.kapott.hbci.manager.MsgGen;
-import org.kapott.hbci.passport.HBCIPassport;
 import org.kapott.hbci.passport.HBCIPassportInternal;
 import org.kapott.hbci.protocol.MSG;
 import org.kapott.hbci.protocol.MultipleSEGs;
@@ -286,6 +284,7 @@ public final class Crypt
                          throw new HBCI_Exception(HBCIUtils.getLocMsg("EXCMSG_CRYPTMODEFAIL",new Object[] {keytype,passport.getCryptMode()}));
                      */
 
+                    /* TODO: removed code because no real checks are done here
                     if (passport.getSysStatus().equals("1")) {
                         String sysid=null;
                         try {
@@ -308,6 +307,7 @@ public final class Crypt
                         
                         // TODO: cid checken
                     }
+                    */
 
                     // TODO spaeter kompression implementieren
                     String compfunc=crypthead.getValueOfDE(msgName+".CryptHead.compfunc");

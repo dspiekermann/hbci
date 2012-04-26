@@ -1,5 +1,5 @@
 
-/*  $Id: CollectHashCodes.java 136 2009-07-25 12:09:24Z kleiner $
+/*  $Id: CollectHashCodes.java,v 1.1 2011/05/04 22:37:45 willuhn Exp $
 
  This file is part of hbci4java
  Copyright (C) 2001-2008  Stefan Palme

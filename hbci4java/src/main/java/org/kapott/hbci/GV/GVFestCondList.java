@@ -1,5 +1,5 @@
 
-/*  $Id: GVFestCondList.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: GVFestCondList.java,v 1.1 2011/05/04 22:37:54 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -44,7 +44,7 @@ public class GVFestCondList
     {
         super(handler,getLowlevelName(),new GVRFestCondList());
         
-        addConstraint("curr","curr",null, LogFilter.FILTER_NONE);
+        addConstraint("curr","curr","EUR", LogFilter.FILTER_NONE);
         addConstraint("maxentries","maxentries","", LogFilter.FILTER_NONE);
     }
     

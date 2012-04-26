@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIUtils.java 185 2009-10-17 08:10:38Z kleiner $
+/*  $Id: HBCIUtils.java,v 1.2 2011/11/24 21:59:37 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -38,12 +38,12 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import org.kapott.cryptalgs.CryptAlgs4JavaProvider;
 import org.kapott.hbci.GV_Result.GVRKUms;
 import org.kapott.hbci.callback.HBCICallback;
 import org.kapott.hbci.exceptions.HBCI_Exception;
 import org.kapott.hbci.exceptions.InvalidArgumentException;
 import org.kapott.hbci.exceptions.InvalidUserDataException;
-import org.kapott.hbci.security.HBCIProvider;
 import org.kapott.hbci.swift.Swift;
 
 /** <p>Hilfsklasse für diverse Tools. Diese Klasse definiert nur statische
@@ -146,6 +146,10 @@ import org.kapott.hbci.swift.Swift;
           Da in den meisten Fällen aber nur der erste Datensatzu tatsächlich belegt
           ist, wird dieser Parameter meist den Wert "1" haben (ist auch default,
           falls dieser Parameter gar nicht gesetzt ist).</p></li>
+      <li><code>client.passport.DDV.pcsc.name</code> (für DDV-Passports bei Verwendung von HBCIPassportDDVPCSC)
+          <p>Wenn statt dem DDV-Passport der DDVPCSC-Passport (basierend auf javax.smartcardio)
+          verwendet wird, kann hier der Name des Kartenlesers angegeben werden. Andernfalls
+          wird der erste gefundene verwendet.</p></li>
       <li><code>client.passport.RDHNew.filename</code> (für RDHNew-Passports)
           <p>Dieser Parameter legt den 
           Dateinamen der Schlüsseldatei fest. Diese Datei sollte am 
@@ -231,13 +235,12 @@ import org.kapott.hbci.swift.Swift;
           <p>Dieser Parameter ist immer auf "1" zu 
           setzen (wird nur intern anders verwendet).</p>
           <p>Siehe dazu auch <code>README.SIZRDHFile</code></p></li>
-      <li><code>client.passport.RDH2File.filename</code> (für RDH2File-Passports)
+      <li><code>client.passport.RDHXFile.filename</code> (für RDHXFile-Passports)
           <p>Dieser Parameter legt den 
-          Dateinamen der RDH2File-Schlüsseldatei fest. Dabei handelt es sich
+          Dateinamen der RDHXFile-Schlüsseldatei fest. Dabei handelt es sich
           um die Schlüsseldatei, die von anderer HBCI-Software (z.B. <em>VR-NetWorld</em>, 
           <em>ProfiCash</em>, ...) erzeugt wurde.</p>
-          <p>Siehe dazu auch <code>README.SIZRDHFile</code></p></li>
-      <li><code>client.passport.RDH2File.init</code> (für RDH2File-Passports)
+      <li><code>client.passport.RDHXFile.init</code> (für RDHXFile-Passports)
           <p>Dieser Parameter ist immer auf "1" zu 
           setzen (wird nur intern anders verwendet).</p></li>
       <li><code>client.passport.Anonymous.filename</code> (für Anonymous-Passports)
@@ -253,7 +256,7 @@ import org.kapott.hbci.swift.Swift;
           erzeugt werden soll, so wird der Wert dieses Parameters 
           benutzt, um die entsprechende Variante auszuwählen. Gültige 
           Werte sind "<code>DDV</code>", "<code>RDHNew</code>", "<code>RDH</code>" (nicht
-          mehr benutzen!), "<code>PinTan</code>", "<code>SIZRDHFile</code>", "<code>RDH2File</code>"
+          mehr benutzen!), "<code>PinTan</code>", "<code>SIZRDHFile</code>", "<code>RDHXFile</code>"
 	  oder "<code>Anonymous</code>" (Groß-/Kleinschreibung beachten).</p></li>
       <li><code>client.retries.passphrase</code>
           <p>Ist das Passwort für die Entschlüsselung der Passport-Datei falsch, so kann die Eingabe
@@ -268,6 +271,11 @@ import org.kapott.hbci.swift.Swift;
           HBCI-Verbindungen Auswirkungen. Beim PIN/TAN-Verfahren wird 
           eine HTTPS-Verbindung mit dem HBCI-Server aufgebaut, für diese 
           Verbindung wird der localPort-Parameter im Moment noch nicht ausgewertet.</p></li>
+      <li><code>comm.standard.socks.server</code>
+          <p>Soll fÃ¼r ausgehende Verbindungen ein SOCKS-Server verwendet werden, kann
+          dieser SOCKS-Server im Format <code>hostname:port</code> festgelegt werden. 
+          Diese Einstellung wird <em>NICHT</em> fÃ¼r HBCI-PIN/TAN verwendet, sondern nur 
+          fÃ¼r alle "richtigen" HBCI-Verbindungen (alle Passport-Varianten von RDH und DDV).</p></li>
       <li><code>kernel.kernel.xmlpath</code>
           <p>(wird nicht gesetzt, zur Zeit nur intern benutzt)</p></li>
       <li><code>kernel.kernel.blzpath</code>
@@ -587,8 +595,8 @@ public final class HBCIUtils
             
             refreshBLZList(HBCIUtils.class.getClassLoader());
 
-            if (Security.getProvider("HBCIProvider")==null)
-                Security.addProvider(new HBCIProvider());
+            if (Security.getProvider("CryptAlgs4Java")==null)
+                Security.addProvider(new CryptAlgs4JavaProvider());
         } catch (Exception e) {
             throw new HBCI_Exception("*** error while initializing HBCI4Java", e);
         }

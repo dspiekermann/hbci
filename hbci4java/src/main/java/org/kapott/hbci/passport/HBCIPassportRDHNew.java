@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIPassportRDHNew.java 136 2009-07-25 12:09:24Z kleiner $
+/*  $Id: HBCIPassportRDHNew.java,v 1.2 2011/05/25 10:07:20 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -21,6 +21,7 @@
 
 package org.kapott.hbci.passport;
 
+import java.io.CharConversionException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,12 +49,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.kapott.cryptalgs.RSAPrivateCrtKey2;
 import org.kapott.hbci.exceptions.HBCI_Exception;
 import org.kapott.hbci.exceptions.InvalidPassphraseException;
 import org.kapott.hbci.manager.HBCIKey;
 import org.kapott.hbci.manager.HBCIUtils;
-import org.kapott.hbci.manager.HBCIUtilsInternal;
-import org.kapott.hbci.security.RSAPrivateCrtKey2;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -153,7 +153,18 @@ public class HBCIPassportRDHNew
                     try {
                         ci=new CipherInputStream(new FileInputStream(getFilename()),cipher);
                         root=db.parse(ci).getDocumentElement();
-                    } catch (SAXException e) {
+                    } catch (Exception e) {
+                      
+                        // willuhn 2011-05-25 Wir lassen einen erneuten Versuch nur bei einer der beiden
+                        // folgenden Exceptions zu. 
+                        // Die "CharConversionException" ist in der Praxis eine
+                        // " com.sun.org.apache.xerces.internal.impl.io.MalformedByteSequenceException: Invalid byte 2 of 2-byte UTF-8 sequence."
+                        // Sie fliegt in "db.parse()". Sprich: Der CipherInputStream kann nicht erkennen,
+                        // ob das Passwort falsch ist. Stattdessen decodiert er einfach Muell, der
+                        // anschliessend nicht als XML-Dokument gelesen werden kann
+                        if (!(e instanceof SAXException) && !(e instanceof CharConversionException))
+                          throw e;
+                        
                         resetPassphrase();
 
                         retries--;

@@ -1,5 +1,5 @@
 
-/*  $Id: AbstractRDHSWPassport.java 146 2009-08-02 16:04:42Z kleiner $
+/*  $Id: AbstractRDHSWPassport.java,v 1.1 2011/05/04 22:37:43 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -25,9 +25,9 @@ import java.math.BigInteger;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.Signature;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -39,12 +39,11 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 
+import org.kapott.cryptalgs.RSAPrivateCrtKey2;
 import org.kapott.hbci.exceptions.HBCI_Exception;
 import org.kapott.hbci.manager.HBCIKey;
 import org.kapott.hbci.manager.HBCIUtils;
 import org.kapott.hbci.manager.HBCIUtilsInternal;
-import org.kapott.hbci.security.HBCIProvider;
-import org.kapott.hbci.security.RSAPrivateCrtKey2;
 
 public abstract class AbstractRDHSWPassport 
 	extends AbstractRDHPassport 
@@ -55,9 +54,6 @@ public abstract class AbstractRDHSWPassport
     {
     	super(init);
     	
-        if (Security.getProvider("HBCIProvider") == null)
-            Security.addProvider(new HBCIProvider());
-
         keys=new HBCIKey[3][];
         for (int i=0;i<3;i++) {
             keys[i]=new HBCIKey[2];
@@ -75,12 +71,6 @@ public abstract class AbstractRDHSWPassport
     public boolean hasInstEncKey()
     {
         return getInstEncKey()!=null;
-    }
-    
-    public boolean hasInstDigKey()
-    {
-        // TODO: abhängig vom sicherheitsprofil bzw. hbci-version
-        return false;
     }
     
     public boolean hasMySigKey()
@@ -106,11 +96,6 @@ public abstract class AbstractRDHSWPassport
     public void setInstEncKey(HBCIKey key)
     {
         setKey(0,1,key);
-    }
-
-    public void setInstDigKey(HBCIKey key)
-    {
-        // TODO: setzen des dig key
     }
 
     public void setMySigKey(HBCIKey key)
@@ -232,21 +217,6 @@ public abstract class AbstractRDHSWPassport
         return getInstEncKey()!=null?getInstEncKey().version:null;
     }
 
-    public String getInstDigKeyName()
-    {
-        return "";
-    }
-
-    public String getInstDigKeyNum()
-    {
-        return "";
-    }
-
-    public String getInstDigKeyVersion()
-    {
-        return "";
-    }
-    
     public String getMySigKeyName()
     {
         return getMyPublicSigKey()!=null?getMyPublicSigKey().userid:null;
@@ -282,9 +252,16 @@ public abstract class AbstractRDHSWPassport
         // System.out.println("passportRDH: setting key "+i+","+j+" to "+(key==null?"null":key.country+":"+key.blz+":"+key.cid+":"+key.num+":"+key.version));
         keys[i][j]=key;
     }
-
+    
     public byte[] sign(byte[] data)
     {
+        /* data is the result from the hash() method. In most cases, this is simply
+         * the hbci message to be signed, because the signature algorithms used here
+         * (iso-9796-1, iso-9796-2, pkcs#1-pss) INCLUDE the hash-step, so it must
+         * not be done manually before.
+         * the only exception for this is is RDH-10 where an extra round of hashing
+         * must be done before using PKCS#1-PSS */
+        
         try {
             Signature sig=getSignatureInstance();
             sig.initSign((PrivateKey)(getMyPrivateSigKey().key));
@@ -299,13 +276,14 @@ public abstract class AbstractRDHSWPassport
 
     public boolean verify(byte[] data,byte[] sig)
     {
+        /* data is the result from the hash() method. In most cases, this is simply
+         * the hbci message to be signed, because the signature algorithms used here
+         * (iso-9796-1, iso-9796-2, pkcs#1-pss) INCLUDE the hash-step, so it must
+         * not be done manually before.
+         * the only exception for this is is RDH-10 where an extra round of hashing
+         * must be done before using PKCS#1-PSS */
+        
         try {
-            /*
-            System.out.println("key: "+((RSAPublicKey)(getInstSigKey().key)).getModulus());
-            System.out.println("msgdata: "+new String(data)+" ("+data.length+" bytes)");
-            System.out.println("signature: "+sig.length);
-            */
-
             Signature sign=getSignatureInstance();
             sign.initVerify((PublicKey)(getInstSigKey().key));
             sign.update(data);

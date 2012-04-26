@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIJobImpl.java 178 2009-10-15 15:04:02Z kleiner $
+/*  $Id: HBCIJobImpl.java,v 1.5 2011/06/06 10:30:31 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -56,7 +56,9 @@ import org.kapott.hbci.structures.Value;
 public abstract class HBCIJobImpl 
     implements HBCIJob
 {
-    private String name;              /* @brief name of the corresponding GV-segment */
+    private String name;              /* Job-Name mit Versionsnummer */
+    private String jobName;           /* Job-Name ohne Versionsnummer */
+    private String segVersion;        /* Segment-Version */
     private Properties llParams;       /* Eingabeparameter für diesen GV (Saldo.KTV.number) */
     private HBCIPassportList passports;
     protected HBCIJobResultImpl jobResult;         /* Objekt mit Rückgabedaten für diesen GV */
@@ -80,7 +82,7 @@ public abstract class HBCIJobImpl
     
     protected HBCIJobImpl(HBCIHandler parentHandler,String jobnameLL,HBCIJobResultImpl jobResult)
     {
-        this.name=findSpecNameForGV(jobnameLL,parentHandler);
+        findSpecNameForGV(jobnameLL,parentHandler);
         this.llParams=new Properties();
         
         this.passports=new HBCIPassportList();
@@ -111,7 +113,7 @@ public abstract class HBCIJobImpl
     {
         StringBuffer ret=null;
         
-        // entfernen der versionsnummer vom aktuellen jobnamen
+        // Macht aus z.Bsp. "KUmsZeit5" -> "KUmsZeitPar5.SegHead.code"
         StringBuffer searchString=new StringBuffer(name);
         for (int i=searchString.length()-1;i>=0;i--) {
             if (!(searchString.charAt(i)>='0' && searchString.charAt(i)<='9')) {
@@ -149,15 +151,17 @@ public abstract class HBCIJobImpl
     /* gibt zu einem gegebenen jobnamen des namen dieses jobs in der syntax-spez.
      * zurück (also mit angehängter versionsnummer)
      */
-    private static String findSpecNameForGV(String jobnameLL,HBCIHandler handler)
+    private void findSpecNameForGV(String jobnameLL,HBCIHandler handler)
     {
         int          maxVersion=0;
         StringBuffer key=new StringBuffer();
         
         // alle param-segmente durchlaufen
-        for (Enumeration i=handler.getPassport().getBPD().propertyNames();i.hasMoreElements();) {
+        Properties bpd = handler.getPassport().getBPD();
+        for (Enumeration i=bpd.propertyNames();i.hasMoreElements();) {
+            String path = (String)i.nextElement();
             key.setLength(0);
-            key.append((String)i.nextElement());
+            key.append(path);
             
             if (key.indexOf("Params")==0) {
                 key.delete(0,key.indexOf(".")+1);
@@ -166,7 +170,16 @@ public abstract class HBCIJobImpl
                 if (key.indexOf(jobnameLL+"Par")==0 &&
                     key.toString().endsWith(".SegHead.code")) 
                 {
-                    key.delete(0,jobnameLL.length()+("Par").length());
+                  // willuhn 2011-06-06 Maximal zulaessige Segment-Version ermitteln
+                  // Hintergrund: Es gibt Szenarien, in denen nicht die hoechste verfuegbare
+                  // Versionsnummer verwendet werden kann, weil die Voraussetzungen impliziert,
+                  // die beim User nicht gegeben sind. Mit diesem Parameter kann die maximale
+                  // Version nach oben begrenzt werden. In AbstractPinTanPassport#setBPD() ist
+                  // ein konkretes Beispiel enthalten (Bank macht HITANS5 und damit HHD 1.4, der
+                  // User hat aber nur ein HHD-1.3-tauglichen TAN-Generator)
+                  int maxAllowedVersion = Integer.parseInt(HBCIUtils.getParam("kernel.gv." + bpd.getProperty(path,"default") + ".segversion.max","0"));
+                  
+                  key.delete(0,jobnameLL.length()+("Par").length());
                     
                     // extrahieren der versionsnummer aus dem spez-namen
                     String st=key.substring(0,key.indexOf("."));
@@ -178,6 +191,12 @@ public abstract class HBCIJobImpl
                         HBCIUtils.log("found invalid job version: key="+key+", jobnameLL="+jobnameLL+" (this is a known, but harmless bug)", HBCIUtils.LOG_WARN);
                     }
                     
+                    // willuhn 2011-06-06 Segment-Versionen ueberspringen, die groesser als die max. zulaessige sind
+                    if (maxAllowedVersion > 0 && version > maxAllowedVersion)
+                    {
+                      HBCIUtils.log("skipping segment version " + version + " for task " + jobnameLL + ", larger than allowed version " + maxAllowedVersion, HBCIUtils.LOG_INFO);
+                      continue;
+                    }
                     // merken der größten jemals aufgetretenen versionsnummer
                     if (version!=0) {
                         HBCIUtils.log("task "+jobnameLL+" is supported with segment version "+st,HBCIUtils.LOG_DEBUG2);
@@ -193,8 +212,76 @@ public abstract class HBCIJobImpl
             throw new JobNotSupportedException(jobnameLL);
         }
         
-        // namen+versionsnummer zurückgeben
-        return jobnameLL+Integer.toString(maxVersion);
+        // namen+versionsnummer speichern
+        this.jobName    = jobnameLL;
+        this.segVersion = Integer.toString(maxVersion);
+        this.name       = jobnameLL + this.segVersion;
+    }
+    
+    /**
+     * Legt die Versionsnummer des Segments manuell fest.
+     * Ist u.a. noetig, um HKTAN-Segmente in genau der Version zu senden, in der
+     * auch die HITANS empfangen wurden. Andernfalls koennte es passieren, dass
+     * wir ein HKTAN mit einem TAN-Verfahren senden, welches in dieser HKTAN-Version
+     * gar nicht von der Bank unterstuetzt wird. Das ist ein Dirty-Hack, ich weiss ;)
+     * Falls das noch IRGENDWO anders verwendet wird, muss man hoellisch aufpassen,
+     * dass alle Stellen, wo "this.name" bzw. "this.segVersion" direkt oder indirekt
+     * verwendet wurde, ebenfalls beruecksichtigt werden.
+     * @param version die neue Versionsnummer.
+     */
+    public synchronized void setSegVersion(String version)
+    {
+      if (version == null || version.length() == 0)
+      {
+        HBCIUtils.log("tried to change segment version for task " + this.jobName + " explicit, but no version given",HBCIUtils.LOG_WARN);
+        return;
+      }
+      
+      // Wenn sich die Versionsnummer nicht geaendert hat, muessen wir die
+      // Huehner ja nicht verrueckt machen ;)
+      if (version.equals(this.segVersion))
+        return;
+      
+      HBCIUtils.log("changing segment version for task " + this.jobName + " explicit from " + this.segVersion + " to " + version,HBCIUtils.LOG_INFO);
+
+      // Der alte Name
+      String oldName = this.name;
+      
+      // Neuer Name und neue Versionsnummer
+      this.segVersion = version;
+      this.name       = this.jobName + version;
+
+      // Bereits gesetzte llParams fixen
+      String[] names = this.llParams.keySet().toArray(new String[this.llParams.size()]);
+      for (String s:names)
+      {
+        if (!s.startsWith(oldName))
+          continue; // nicht betroffen
+
+        // Alten Schluessel entfernen und neuen einfuegen
+        String value = this.llParams.getProperty(s);
+        String newName = s.replaceFirst(oldName,this.name);
+        this.llParams.remove(s);
+        this.llParams.setProperty(newName,value);
+      }
+
+      // Destination-Namen in den LowLevel-Parameter auf den neuen Namen umbiegen
+      Enumeration e = constraints.keys();
+      while (e.hasMoreElements())
+      {
+        String frontendName = (String) e.nextElement();
+        String[][] values = (String[][]) constraints.get(frontendName);
+        for (int i=0;i<values.length;++i)
+        {
+          String[] value = values[i];
+          // value[0] ist das Target
+          if (!value[0].startsWith(oldName))
+            continue;
+
+          // Hier ersetzen wir z.Bsp. "TAN2Step5.process" gegen "TAN2Step3.process"
+          value[0] = value[0].replaceFirst(oldName,this.name);
+        }
+      }
     }
     
     public int getMaxNumberPerMsg()
@@ -587,6 +674,11 @@ public abstract class HBCIJobImpl
     {
         return name;
     }
+    
+    public String getSegVersion()
+    {
+        return this.segVersion;
+    }
 
     /* stellt fest, ob für diesen Task ein neues Auftragssegment generiert werden muss.
        Das ist in zwei Fällen der Fall: der Task wurde noch nie ausgeführt; oder der Task
@@ -910,8 +1002,44 @@ public abstract class HBCIJobImpl
     // um "besondere Werte" (z.B. sumValues) irgendwie anders zu errechnen
     public String getChallengeParam(String path) 
     {
-        String valuePath=this.getName()+"."+path;
-        return this.getLowlevelParams().getProperty(valuePath);
+        String result;
+        if (path.equals("SegHead.code")) {
+            /* this special value is required for HHD1.3, where the segcode
+             * can be part of the challenge parameters, but the segcode is
+             * not a "lowlevel param", so have to handle this manually */
+            result=getHBCICode();   
+        } else {
+            // normal lowlevel param
+            String valuePath=this.getName()+"."+path;
+            result=this.getLowlevelParam(valuePath);
+        }
+        return result;
+    }
+    
+    /**
+     * Liefert das Auftraggeber-Konto, wie es ab HKTAN5 erforderlich ist.
+     * @return das Auftraggeber-Konto oder NULL, wenn keines angegeben ist.
+     */
+    public Konto getOrderAccount()
+    {
+      // Checken, ob wir das Konto unter "My.number" haben
+      String prefix = this.getName() + ".My.";
+      String number = this.getLowlevelParam(prefix + "number");
+      if (number == null || number.length() == 0)
+      {
+        // OK, vielleicht unter "KTV.number"?
+        prefix = this.getName() + ".KTV.";
+        number = this.getLowlevelParam(prefix + "number");
+
+        if (number == null || number.length() == 0)
+          return null; // definitiv kein Konto vorhanden
+      }
+      Konto k = new Konto();
+      k.number    = number;
+      k.subnumber = this.getLowlevelParam(prefix + "subnumber");
+      k.blz       = this.getLowlevelParam(prefix + "KIK.blz");
+      k.country   = this.getLowlevelParam(prefix + "KIK.country");
+      return k;
     }
     
     public HBCIHandler getParentHandler()
@@ -921,7 +1049,7 @@ public abstract class HBCIJobImpl
     
     public void addToQueue(String customerId)
     {
-    	getParentHandler().addJob(customerId,this);
+    	getParentHandler().addJobToDialog(customerId,this);
     }
     
     public void addToQueue()

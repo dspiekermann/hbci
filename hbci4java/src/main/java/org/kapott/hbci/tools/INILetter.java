@@ -1,5 +1,5 @@
 
-/*  $Id: INILetter.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: INILetter.java,v 1.1 2011/05/04 22:37:45 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -43,7 +43,7 @@ import org.kapott.hbci.passport.HBCIPassport;
     und die Programmausführung mit der Meldung <em>"Es muss ein INI-Brief erzeugt
     werden..."</em> abbricht.</p><p>
     Das erste Kommandozeilenargument <code>passporttype</code> gibt an, ob es sich um ein <code>RDH</code>-,
-    ein <code>RDHNew</code>-, ein <code>SIZRDHFile</code>- oder ein <code>RDH2File</code>-Passport-Format handelt. 
+    ein <code>RDHNew</code>-, ein <code>SIZRDHFile</code>- oder ein <code>RDHXFile</code>-Passport-Format handelt. 
     <code>RDH</code>-Passports sollten nicht mehr verwendet werden (siehe dazu auch Datei 
     <code>README.RDHNew</code>). Für <code>SIZRDHFile</code>-Passports wird eine separate
     Bibliothek benötigt (siehe {@link org.kapott.hbci.passport.HBCIPassportSIZRDHFile}).</p>
@@ -81,7 +81,7 @@ public final class INILetter
     public static void main(String[] args)
         throws IOException
     {
-        String rdhtype=getArg(args,0,"Passport-Typ (RDH, RDHNew, SIZRDHFile oder RDH2File)");
+        String rdhtype=getArg(args,0,"Passport-Typ (RDH, RDHNew, SIZRDHFile oder RDHXFile)");
         String pfilename=getArg(args,1,"Dateiname der Passport-Datei");
         String ifilename=getArg(args,2,"Dateiname für INI-Brief (noch nicht existierende Text-Datei)");
         

@@ -1,5 +1,5 @@
 
-/*  $Id: LogFilter.java 122 2009-02-16 13:30:04Z kleiner $
+/*  $Id: LogFilter.java,v 1.1 2011/05/04 22:37:46 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme

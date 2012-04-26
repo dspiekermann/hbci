@@ -1,5 +1,5 @@
 
-/*  $Id: AnalyzeReportOfTransactions.java 120 2009-02-12 14:49:12Z kleiner $
+/*  $Id: AnalyzeReportOfTransactions.java,v 1.1 2011/05/04 22:37:45 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -133,14 +133,14 @@ public final class AnalyzeReportOfTransactions
                 // kontoauszug durchlaufen, jeden eintrag einmal anfassen:
                 
                 List lines=result.getFlatData();
-                int  numof_lines=lines.size();
+                // int  numof_lines=lines.size();
 
                 for (Iterator j=lines.iterator(); j.hasNext(); ) { // alle Umsatzeinträge durchlaufen
                     GVRKUms.UmsLine entry=(GVRKUms.UmsLine)j.next();
 
                     // für jeden Eintrag ein Feld mit allen Verwendungszweckzeilen extrahieren
                     List usages=entry.usage;
-                    int  numof_usagelines=usages.size();
+                    // int  numof_usagelines=usages.size();
 
                     for (Iterator k=usages.iterator(); k.hasNext(); ) { // alle Verwendungszweckzeilen durchlaufen
                         String usageline=(String)k.next();

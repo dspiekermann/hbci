@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIDialog.java 178 2009-10-15 15:04:02Z kleiner $
+/*  $Id: HBCIDialog.java,v 1.1 2011/05/04 22:37:46 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -138,17 +138,6 @@ public final class HBCIDialog
                             kernel.rawSet("KeyReq_2.KeyName.userid", mainPassport.getInstSigKeyName());
                             kernel.rawSet("KeyReq_2.KeyName.keynum", mainPassport.getInstSigKeyNum());
                             kernel.rawSet("KeyReq_2.KeyName.keyversion", mainPassport.getInstSigKeyVersion());
-                        }
-
-                        if (mainPassport.hasInstDigKey()) {
-                            kernel.rawSet("KeyReq_3.SecProfile.method",mainPassport.getProfileMethod());
-                            kernel.rawSet("KeyReq_3.SecProfile.version",mainPassport.getProfileVersion());
-                            kernel.rawSet("KeyReq_3.KeyName.keytype", "D");
-                            kernel.rawSet("KeyReq_3.KeyName.KIK.country", country);
-                            kernel.rawSet("KeyReq_3.KeyName.KIK.blz", blz);
-                            kernel.rawSet("KeyReq_3.KeyName.userid", mainPassport.getInstDigKeyName());
-                            kernel.rawSet("KeyReq_3.KeyName.keynum", mainPassport.getInstDigKeyNum());
-                            kernel.rawSet("KeyReq_3.KeyName.keyversion", mainPassport.getInstDigKeyVersion());
                         }
                     }
                 }

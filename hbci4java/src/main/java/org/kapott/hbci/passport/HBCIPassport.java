@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIPassport.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: HBCIPassport.java,v 1.1 2011/05/04 22:37:43 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -43,9 +43,9 @@ import org.kapott.hbci.structures.Konto;
       <li><code>HBCIPassportSIZRDHFile</code> für den Zugang über RDH mit Datei,
           wobei als Datei eine SIZ-Schlüsseldatei, wie sie z.B. von StarMoney oder GENOlite
           erzeugt wird, verwendet werden kann</li>
-      <li><code>HBCIPassportRDH2File</code> für den Zugang über RDH mit Datei,
-          wobei als Datei eine RDH-2-Schlüsseldatei verwendet wird, wie sie z.B.
-          von VR-NetWorld erzeugt wird.</li>
+      <li><code>HBCIPassportRDHXFile</code> für den Zugang über RDH mit Datei,
+          wobei als Datei eine RDH-2- oder RDH-10-Schlüsseldatei verwendet wird, 
+          wie sie z.B. von VR-NetWorld erzeugt wird.</li>
     </ul>
     <p>In einem Passport werden alle nutzer- und institutsspezifischen Daten verwaltet.
     Dazu gehören</p>
@@ -191,18 +191,15 @@ public interface HBCIPassport
     
     public boolean needInstKeys();
     public boolean needUserKeys();
-    public boolean needDigKey();
     
     public boolean hasInstSigKey();
     public boolean hasInstEncKey();
-    public boolean hasInstDigKey();
     
     public boolean hasMySigKey();
     public boolean hasMyEncKey();
     
     public void clearInstSigKey();
     public void clearInstEncKey();
-    public void clearInstDigKey();
 
     public HBCIKey getMyPublicSigKey();
     public HBCIKey getMyPublicEncKey();

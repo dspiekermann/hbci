@@ -1,5 +1,5 @@
 
-/*  $Id: AbstractRDHPassport.java 152 2009-08-25 18:20:36Z kleiner $
+/*  $Id: AbstractRDHPassport.java,v 1.1 2011/05/04 22:37:43 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -22,6 +22,8 @@
 package org.kapott.hbci.passport;
 
 import java.security.Key;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
 import java.security.interfaces.RSAPublicKey;
 
@@ -30,12 +32,12 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
 
+import org.kapott.cryptalgs.SignatureParamSpec;
 import org.kapott.hbci.comm.Comm;
 import org.kapott.hbci.exceptions.HBCI_Exception;
 import org.kapott.hbci.manager.HBCIUtils;
 import org.kapott.hbci.security.Crypt;
 import org.kapott.hbci.security.Sig;
-import org.kapott.hbci.security.SignatureParamSpec;
 
 
 public abstract class AbstractRDHPassport 
@@ -106,12 +108,6 @@ public abstract class AbstractRDHPassport
     
     public boolean needUserSig()
     {
-        return false;
-    }
-    
-    public boolean needDigKey()
-    {
-        // TODO: das abhängig vom sicherheitsprofil bzw. der aktuellen hbci-version machen
         return false;
     }
     
@@ -271,11 +267,11 @@ public abstract class AbstractRDHPassport
         switch (profile) {
         case 1:
             hashalg="RIPEMD160";
-            hashprovider="HBCIProvider";
+            hashprovider="CryptAlgs4Java";
             break;
         case 2:
             hashalg="RIPEMD160";
-            hashprovider="HBCIProvider";
+            hashprovider="CryptAlgs4Java";
             break;
         case 10:
             hashalg="SHA-256";
@@ -300,15 +296,15 @@ public abstract class AbstractRDHPassport
         switch (profile) {
         case 1:
             sigalg="ISO9796p1";
-            sigprovider="HBCIProvider";
+            sigprovider="CryptAlgs4Java";
             break;
         case 2:
             sigalg="ISO9796p2";
-            sigprovider="HBCIProvider";
+            sigprovider="CryptAlgs4Java";
             break;
         case 10:
             sigalg="PKCS1_PSS";
-            sigprovider="HBCIProvider";
+            sigprovider="CryptAlgs4Java";
             break;
         default:
             // TODO das später vom security profile abhängig machen
@@ -344,4 +340,30 @@ public abstract class AbstractRDHPassport
             throw new HBCI_Exception("*** can not create message key",ex);
         }
     }
+    
+    public byte[] hash(byte[] data)
+    {
+        /* data is the plaintext message to be signed. In most cases, we do NOT
+         * have to execute an explicit hashing here, because most signature algorithms
+         * already INCLUDE their own hashing step. The only exception is RDH-10,
+         * where we have to sign the HASH value, not the HBCI message itself, so
+         * in this case we have to execute one round of hashing here */
+        
+        byte[] result=data;
+        
+        if (getHashAlg().equals(Sig.HASHALG_SHA256_SHA256)) {
+            // only if we need the double-round-hash thing
+            
+            MessageDigest dig;
+            try {
+                dig = MessageDigest.getInstance("SHA-256");
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+            result=dig.digest(data);
+        }
+        
+        return result;
+    }
+
 }

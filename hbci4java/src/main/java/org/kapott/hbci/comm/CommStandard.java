@@ -1,5 +1,5 @@
 
-/*  $Id: CommStandard.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: CommStandard.java,v 1.1 2011/05/04 22:37:50 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -24,6 +24,7 @@ package org.kapott.hbci.comm;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.Socket;
 
 import org.kapott.hbci.exceptions.HBCI_Exception;
@@ -50,7 +51,25 @@ public final class CommStandard
                 HBCIUtils.LOG_DEBUG);
         
         try {
-            s=new Socket();
+            String socksServer=HBCIUtils.getParam("comm.standard.socks.server");
+            if (socksServer!=null && socksServer.trim().length()!=0) {
+                // use SOCKS server
+                String[] ss=socksServer.split(":");
+                String socksHost=ss[0].trim();
+                String socksPort=ss[1].trim();
+                HBCIUtils.log(
+                    "using SOCKS server at "+socksHost+":"+socksPort,
+                    HBCIUtils.LOG_DEBUG);
+                
+                Proxy proxy=new Proxy(
+                    Proxy.Type.SOCKS, 
+                    new InetSocketAddress(socksHost, Integer.parseInt(socksPort)));
+                this.s=new Socket(proxy);
+                
+            } else {
+                // no SOCKS server
+                s=new Socket();
+            }
 
             int localPort=Integer.parseInt(HBCIUtils.getParam("client.connection.localPort","0"));
             if (localPort!=0) {

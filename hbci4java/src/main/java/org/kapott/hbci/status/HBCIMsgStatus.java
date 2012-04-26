@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIMsgStatus.java 110 2008-12-18 16:02:31Z kleiner $
+/*  $Id: HBCIMsgStatus.java,v 1.1 2011/05/04 22:38:02 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.kapott.hbci.manager.HBCIUtils;
 import org.kapott.hbci.manager.HBCIUtilsInternal;
 
 /** <p>Enthält alle Status-Informationen zu genau einem Nachrichtenaustausch.

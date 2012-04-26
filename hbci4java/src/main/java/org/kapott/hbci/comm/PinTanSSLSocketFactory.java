@@ -1,5 +1,5 @@
 /*
- * $Id: PinTanSSLSocketFactory.java 176 2009-10-14 13:50:47Z kleiner $
+ * $Id: PinTanSSLSocketFactory.java,v 1.1 2011/05/04 22:37:51 willuhn Exp $
  * 
  * This file is part of HBCI4Java Copyright (C) 2001-2008 Stefan Palme
  * 
@@ -38,11 +38,23 @@ import javax.net.ssl.TrustManager;
 import org.kapott.hbci.manager.HBCIUtils;
 import org.kapott.hbci.passport.AbstractPinTanPassport;
 
-// Socket-Factory, die in jedem Fall benutzt wird.
-// Beim *Instanziieren* wird eine "real" SSL-Factory-Instanz geholt, die
-// einen modifizierten TrustManager verwendet, wenn Zert.-Check deaktiviert ist.
-// Sie entscheidet bei der Erzeugung eines Sockets, ob an einen bestimmten
-// lokalen Port gebunden werden soll. (TODO: local port binding geht nicht)
+/* This SSLSocketFactory will be used in certain circumstances as a drop-in 
+ * replacement for Java's standard SSLSocketFactory:
+ *   - when certificate checking should be disabled (because we have to install
+ *       an own SSLContext with a modified TrustManager in this case)
+ *   - when we want to log the HTTP traffic going through the SSL socket 
+ *       (because in this case we have to create "LoggingSockets" instead of
+ *       standard Java sockets)
+ *       
+ * If none of this applies, Java's standard factory will be used.
+ *    
+ * This socket factory works as a Delegator by creating a java standard socket
+ * first and then delegating all relevant API calls to the standard socket
+ * while hooking in some special code to log traffic etc...
+ * 
+ * This socket factory CAN NOT BE USED WITH OPERA<10 because of a bug in operas
+ * Java plugin, so when using this class in a Java Applet in Opera, the user
+ * has to ENABLE certificate checking and DISABLE ssl-logging */
 public class PinTanSSLSocketFactory
     extends SSLSocketFactory
 {
@@ -72,7 +84,7 @@ public class PinTanSSLSocketFactory
     }
     
     
-    private boolean debug()
+    public boolean debug()
     {
         return HBCIUtils.getParam("log.ssl.enable","0").equals("1");
     }

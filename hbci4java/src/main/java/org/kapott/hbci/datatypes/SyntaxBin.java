@@ -1,5 +1,5 @@
 
-/*  $Id: SyntaxBin.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: SyntaxBin.java,v 1.1 2011/05/04 22:37:55 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -37,7 +37,7 @@ import org.kapott.hbci.manager.HBCIUtilsInternal;
       - B bedeutet, der nachfolgende String ist bereits ein Binärstring 
         und soll ohne Änderungen übernommen werden
 
-    @author $Author: kleiner $
+    @author $Author: willuhn $
 */
 
 // intern wird das byte-array gespeichert

@@ -1,5 +1,5 @@
 
-/*  $Id: GVUeb.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: GVUeb.java,v 1.1 2011/05/04 22:37:54 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -28,7 +28,6 @@ import org.kapott.hbci.exceptions.InvalidUserDataException;
 import org.kapott.hbci.manager.HBCIHandler;
 import org.kapott.hbci.manager.HBCIUtilsInternal;
 import org.kapott.hbci.manager.LogFilter;
-import org.kapott.hbci.passport.HBCIPassport;
 
 public class GVUeb
     extends HBCIJobImpl
@@ -47,10 +46,11 @@ public class GVUeb
     {
         this(handler,getLowlevelName());
         
-        HBCIPassport passport=handler.getPassport();
-        
+        addConstraint("src.country","My.KIK.country","DE", LogFilter.FILTER_NONE);
+        addConstraint("src.blz","My.KIK.blz",null, LogFilter.FILTER_MOST);
         addConstraint("src.number","My.number",null, LogFilter.FILTER_IDS);
         addConstraint("src.subnumber","My.subnumber","", LogFilter.FILTER_MOST);
+        addConstraint("dst.country","Other.KIK.country","DE", LogFilter.FILTER_NONE);
         addConstraint("dst.blz","Other.KIK.blz",null, LogFilter.FILTER_MOST);
         addConstraint("dst.number","Other.number",null, LogFilter.FILTER_IDS);
         addConstraint("dst.subnumber","Other.subnumber","", LogFilter.FILTER_MOST);
@@ -58,9 +58,6 @@ public class GVUeb
         addConstraint("btg.curr","BTG.curr",null, LogFilter.FILTER_NONE);
         addConstraint("name","name",null, LogFilter.FILTER_IDS);
 
-        addConstraint("src.blz","My.KIK.blz",passport.getUPD().getProperty("KInfo.KTV.KIK.blz"), LogFilter.FILTER_MOST);
-        addConstraint("src.country","My.KIK.country",passport.getUPD().getProperty("KInfo.KTV.KIK.country"), LogFilter.FILTER_NONE);
-        addConstraint("dst.country","Other.KIK.country",passport.getCountry(), LogFilter.FILTER_NONE);
         addConstraint("name2","name2","", LogFilter.FILTER_IDS);
         addConstraint("key","key","51", LogFilter.FILTER_NONE);
 

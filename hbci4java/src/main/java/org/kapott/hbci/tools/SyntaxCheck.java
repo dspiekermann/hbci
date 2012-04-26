@@ -1,5 +1,5 @@
 
-/*  $Id: SyntaxCheck.java 123 2009-02-16 13:37:28Z kleiner $
+/*  $Id: SyntaxCheck.java,v 1.1 2011/05/04 22:37:45 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme

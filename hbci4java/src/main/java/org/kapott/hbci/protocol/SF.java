@@ -1,5 +1,5 @@
 
-/*  $Id: SF.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: SF.java,v 1.1 2011/05/04 22:38:03 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -223,7 +223,26 @@ public final class SF
             	// das Segment wird nur geparst, wenn entweder segcode und segversion
             	// mit dem aus der syntax-spez übereinstimmen oder wenn in der syntax-
             	// spez. keine konkreten werte dafür gefunden wurden
-                ret=super.parseAndAppendNewChildContainer(segref,predelim0,predelim1,res,fullResLen,syntax,predefs,valids);
+                
+                /* this is a very ugly hack for the ugly parser code: in certain
+                 * cases it may happen that hbci4java takes a HIUPA segment as
+                 * a BPD-Params-Template segment. the following code tries to
+                 * avoid this, but the solution is not "general". 
+                 * TODO: we really should replace the ugly message engine soon! */
+                
+                boolean parseNext=true;
+                if (getName().startsWith("Params")) {
+                    /* we are in the BPD-Params SF. only child SEGs with a segcode
+                     * of the form ".....S" are allowed here */
+                    if ((nextSegId[0].length()!=6) || !nextSegId[0].endsWith("S")) {
+                        // this is not a BPD-Param segment
+                        parseNext=false;
+                    }
+                }
+                
+                if (parseNext) {
+                    ret=super.parseAndAppendNewChildContainer(segref,predelim0,predelim1,res,fullResLen,syntax,predefs,valids);
+                }
             }
         } else if ((segref.getNodeName()).equals("SF")) {
             ret=super.parseAndAppendNewChildContainer(segref,predelim0,predelim1,res,fullResLen,syntax,predefs,valids);

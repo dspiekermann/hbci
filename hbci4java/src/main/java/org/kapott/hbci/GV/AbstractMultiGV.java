@@ -1,5 +1,5 @@
 
-/*  $Id: AbstractMultiGV.java 178 2009-10-15 15:04:02Z kleiner $
+/*  $Id: AbstractMultiGV.java,v 1.2 2011/05/17 16:39:07 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -75,6 +75,11 @@ public abstract class AbstractMultiGV
             } else if (path.equals("sumCurr")) {
             	// währung des sammlers
                 ret=dtaus.getCurr()==DTAUS.CURR_DM?"DEM":"EUR";
+            
+            } else if (path.equals("sumCount")) {
+              // willuhn 2011-05-17 Anzahl der Buchungen, HHD 1.4
+              // Anzahl der Buchungen
+              ret = Integer.toString(dtaus.getEntries().size());
             }
         } else {
             ret=super.getChallengeParam(path);

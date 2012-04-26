@@ -1,5 +1,5 @@
 
-/*  $Id: GVFestList.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: GVFestList.java,v 1.1 2011/05/04 22:37:53 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -54,7 +54,7 @@ public class GVFestList
         addConstraint("my.number","KTV.number",null, LogFilter.FILTER_IDS);
         addConstraint("my.subnumber","KTV.subnumber","", LogFilter.FILTER_MOST);
         addConstraint("my.blz","KTV.KIK.blz",null, LogFilter.FILTER_MOST);
-        addConstraint("my.country","KTV.KIK.country",null, LogFilter.FILTER_NONE);
+        addConstraint("my.country","KTV.KIK.country","DE", LogFilter.FILTER_NONE);
         addConstraint("dummy","allaccounts","N", LogFilter.FILTER_NONE);
         
         // TODO: kontakt fehlt

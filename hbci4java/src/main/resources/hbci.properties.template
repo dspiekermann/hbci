@@ -165,7 +165,7 @@ client.passport.Anonymous.init=1
 # this option specifies which security method to use 
 # (DDV,  
 #  RDHNew, RDH, 
-#  SIZRDHFile, RDH2File, 
+#  SIZRDHFile, RDHXFile, 
 #  PinTan, Anonymous)
 # when no parameter is given to HBCIPassport.getInstance()
 client.passport.default=DDV

@@ -1,5 +1,5 @@
 
-/*  $Id: HBCICallbackIOStreams.java 136 2009-07-25 12:09:24Z kleiner $
+/*  $Id: HBCICallbackIOStreams.java,v 1.1 2011/05/04 22:37:52 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -57,11 +57,23 @@ public class HBCICallbackIOStreams
         this.inStream=inStream;
     }
 
+    /** TODO: doc */
+    protected void setInStream(BufferedReader in)
+    {
+        this.inStream=in;
+    }
+    
     /** Gibt des INPUT-Stream zurück. */
     protected BufferedReader getInStream() {
         return inStream;
     }
 
+    /** TODO: doc */
+    protected void setOutStream(PrintStream out)
+    {
+        this.outStream=out;
+    }
+    
     /** Gibt den verwendeten OUTPUT-Stream zurück. */
     protected PrintStream getOutStream() {
         return outStream;
@@ -173,8 +185,7 @@ public class HBCICallbackIOStreams
                     getOutStream().println(HBCIUtilsInternal.getLocMsg("HASH")+": "+HBCIUtils.data2hex(iniletter.getKeyHashDisplay()));
                     getOutStream().print("<ENTER>=OK, \"ERR\"=ERROR: ");
                     getOutStream().flush();
-                    retData.replace(0,retData.length(),
-                            getInStream().readLine());
+                    retData.replace(0, retData.length(), getInStream().readLine());
                     break;
     
                 case HAVE_NEW_MY_KEYS:
@@ -195,6 +206,7 @@ public class HBCICallbackIOStreams
                 case HAVE_INST_MSG:
                     getOutStream().println(msg);
                     getOutStream().println(HBCIUtilsInternal.getLocMsg("CONTINUE"));
+                    getOutStream().flush();
                     getInStream().readLine();
                     break;
     
@@ -246,8 +258,7 @@ public class HBCICallbackIOStreams
                     getOutStream().println(msg);
                     getOutStream().print("<ENTER>=OK, \"ERR\"=ERROR: ");
                     getOutStream().flush();
-                    retData.replace(0,retData.length(),
-                            getInStream().readLine());
+                    retData.replace(0,retData.length(), getInStream().readLine());
                     break;
                     
                 case NEED_SIZENTRY_SELECT:
@@ -264,8 +275,7 @@ public class HBCICallbackIOStreams
                     }
                     getOutStream().print(HBCIUtilsInternal.getLocMsg("CALLB_SELECT_ENTRY")+": ");
                     getOutStream().flush();
-                    retData.replace(0,retData.length(),
-                            getInStream().readLine());
+                    retData.replace(0,retData.length(),getInStream().readLine());
                     break;
     
                 case NEED_PT_SECMECH:
@@ -279,8 +289,7 @@ public class HBCICallbackIOStreams
                     }
                     getOutStream().print(HBCIUtilsInternal.getLocMsg("CALLB_SELECT_ENTRY")+": ");
                     getOutStream().flush();
-                    retData.replace(0,retData.length(),
-                            getInStream().readLine());
+                    retData.replace(0,retData.length(),getInStream().readLine());
                     break;
     
                 case NEED_INFOPOINT_ACK:
@@ -295,6 +304,7 @@ public class HBCICallbackIOStreams
                 case CLOSE_CONNECTION:
                     getOutStream().println(msg);
                     getOutStream().println(HBCIUtilsInternal.getLocMsg("CONTINUE"));
+                    getOutStream().flush();
                     getInStream().readLine();
                     break;
     

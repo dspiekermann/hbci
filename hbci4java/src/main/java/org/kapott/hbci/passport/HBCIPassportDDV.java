@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIPassportDDV.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: HBCIPassportDDV.java,v 1.1 2011/05/04 22:37:43 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -28,7 +28,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.security.MessageDigest;
-import java.security.Security;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -48,7 +49,6 @@ import org.kapott.hbci.manager.HBCIKey;
 import org.kapott.hbci.manager.HBCIUtils;
 import org.kapott.hbci.manager.HBCIUtilsInternal;
 import org.kapott.hbci.manager.LogFilter;
-import org.kapott.hbci.security.HBCIProvider;
 
 /** <p>Passport-Klasse für Sicherheitsverfahren DDV mit Medium Chipkarte. Bei dieser
     Variante gibt die Bank eine Chipkarte aus, auf der die Zugangsdaten des
@@ -108,9 +108,6 @@ public class HBCIPassportDDV
         super(init);
         setParamHeader("client.passport.DDV");
         
-        if (Security.getProvider("HBCIProvider") == null)
-            Security.addProvider(new HBCIProvider());
-
         keys=new HBCIKey[2];
         for (int i=0;i<2;i++) {
             keys[i]=null;
@@ -443,21 +440,6 @@ public class HBCIPassportDDV
         return getInstEncKey()!=null?getInstEncKey().version:null;
     }
     
-    public String getInstDigKeyName()
-    {
-        return "";
-    }
-
-    public String getInstDigKeyNum()
-    {
-        return "";
-    }
-
-    public String getInstDigKeyVersion()
-    {
-        return "";
-    }
-    
     public HBCIKey getMyPublicSigKey()
     {
         return getInstSigKey();
@@ -524,11 +506,6 @@ public class HBCIPassportDDV
         keys[i]=key;
     }
     
-    public void setInstDigKey(HBCIKey key)
-    {
-        // gibt es bei DDV nicht
-    }
-
     public void setInstSigKey(HBCIKey key)
     {
         setKey(0,key);
@@ -667,31 +644,35 @@ public class HBCIPassportDDV
             throw new HBCI_Exception(HBCIUtilsInternal.getLocMsg("EXCMSG_PASSPORT_WRITEERR"),e);
         }
     }
+    
+    public byte[] hash(byte[] data)
+    {
+        /* hash-before-sign creates a RMD-160 hash, which will encrypted by
+         * the sign() method later */
+        MessageDigest dig;
+        try {
+            dig = MessageDigest.getInstance("RIPEMD160","CryptAlgs4Java");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException(e);
+        }
+        return dig.digest(data);
+    }
 
     public byte[] sign(byte[] data)
     {
-        try {
-            checkPIN();
-
-            MessageDigest dig=MessageDigest.getInstance("RIPEMD160","HBCIProvider");
-            byte[] sig=ctSign(dig.digest(data));
-            return sig;
-        } catch (Exception e) {
-            throw new HBCI_Exception(HBCIUtilsInternal.getLocMsg("EXCMSG_CANTSIGN"),e);
-        }
+        /* data is hash value calculated by the hash() method */
+        checkPIN();
+        return ctSign(data);
     }
 
     public boolean verify(byte[] data,byte[] sig)
     {
-        try {
-            checkPIN();
-
-            MessageDigest dig=MessageDigest.getInstance("RIPEMD160","HBCIProvider");
-            byte[] mySig=ctSign(dig.digest(data));
-            return Arrays.equals(sig,mySig);
-        } catch (Exception ex) {
-            throw new HBCI_Exception(HBCIUtilsInternal.getLocMsg("EXCMSG_SIGVERIFYFAIL"),ex);
-        }
+        /* data is the hash value calculated by the hash() method */
+        checkPIN();
+        byte[] correctSig=ctSign(data);
+        return Arrays.equals(sig,correctSig);
     }
 
     public byte[][] encrypt(byte[] plainMsg)

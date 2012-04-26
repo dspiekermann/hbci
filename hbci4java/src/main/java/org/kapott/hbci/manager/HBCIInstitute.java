@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIInstitute.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: HBCIInstitute.java,v 1.1 2011/05/04 22:37:46 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -130,9 +130,6 @@ public final class HBCIInstitute
                 } else if (keyType.equals("V")) {
                     passport.setInstEncKey(new HBCIKey(keyCountry,keyBLZ,keyUserId,keyNum,keyVersion,key));
                     foundChanges=true;
-                } else { 
-                    passport.setInstDigKey(new HBCIKey(keyCountry,keyBLZ,keyUserId,keyNum,keyVersion,key));
-                    foundChanges=true;
                 }
             }
         } catch (Exception e) {
@@ -165,7 +162,6 @@ public final class HBCIInstitute
             try {
                 passport.setInstSigKey(null);
                 passport.setInstEncKey(null);
-                passport.setInstDigKey(null);
                 passport.saveChanges();
             } catch (Exception e) {
                 HBCIUtils.log(e);
@@ -314,13 +310,6 @@ public final class HBCIInstitute
                     kernel.rawSet("KeyReq_2.KeyName.keytype", "S");
                     kernel.rawSet("KeyReq_2.KeyName.KIK.blz", blz);
                     kernel.rawSet("KeyReq_2.KeyName.KIK.country", country);
-                    if (passport.needDigKey()) {
-                        kernel.rawSet("KeyReq_3.SecProfile.method",passport.getProfileMethod());
-                        kernel.rawSet("KeyReq_3.SecProfile.version",passport.getProfileVersion());
-                        kernel.rawSet("KeyReq_3.KeyName.keytype", "D");
-                        kernel.rawSet("KeyReq_3.KeyName.KIK.blz", blz);
-                        kernel.rawSet("KeyReq_3.KeyName.KIK.country", country);
-                    }
                     kernel.rawSet("ProcPrep.BPD", passport.getBPDVersion());
                     kernel.rawSet("ProcPrep.UPD", passport.getUPDVersion());
                     kernel.rawSet("ProcPrep.lang", "0");

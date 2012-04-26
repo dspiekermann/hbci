@@ -90,6 +90,7 @@ Job <em>gar nicht</em> oder nur nicht per Highlevel-Interface unterstützt wird.<
 <a href="#uebeil">Eilüberweisung</a><br/>
 <a href="#donation">Spendenüberweisung</a><br/>
 <a href="#uebforeign">Auslandsüberweisung</a><br/>
+<a href="#uebsepa">SEPA-Einzelüberweisung</a><br/>
 <a href="#termueb">Terminierte Einzelüberweisung</a><br/>
 <a href="#termueblist">Liste noch anstehender terminierten Überweisungen abholen</a><br/>
 <a href="#termuebedit">Noch anstehende terminierte Überweisung verändern</a><br/>
@@ -302,6 +303,25 @@ zu überweisende Geldbetrag die gesetzliche Meldepflicht (zur Zeit 12500 EUR) nic
     <tr valign="top"><td></td><td><code>dst.kiname</code></td><td>String</td><td>obligatorisch</td><td>Vollständiger Name der Zielbank.</td></tr>
     <tr valign="top"><td></td><td><code>btg</code></td><td>Value</td><td>obligatorisch</td><td>Geldbetrag, der überwiesen werden soll.</td></tr>
     <tr valign="top"><td></td><td><code>usage</code></td><td>String</td><td>optional</td><td>Verwendungszweck</td></tr>
+  <tr valign="top"><td><em>Rückgabedaten-Klasse</em></td><td><a href="../GV_Result/HBCIJobResult.html"><code>HBCIJobResult</code></a></td><td></td></tr>
+</table>
+
+<hr size="1" noshade="noshade"/>
+<h3><a name="uebsepa">SEPA-Einzelüberweisung</a></h3>
+<p>Dabei handelt es sich um eine Überweisung nach dem SEPA-Standard (ein Projekt, bei dem ein
+europaweit einheitlicher Zahlungsraum angestrebt wird). Solche Überweisungen können als Ziel
+sowohl in- als auch ausländische Konten haben. Die normale Kombination von Kontonummer/BLZ wird
+ersetzt durch die weltweit eindeutige IBAN (entspricht Konto-Identifikation) und BIC 
+(Bankkennung). Derzeit (2009) werden SEPA-Geschäftsvorfälle nicht von allen Banken unterstützt.</p>
+<table cellpadding="3">
+  <tr valign="top"><td><em>Highlevel-Name</em></td><td><code>UebSEPA</code></td><td></td></tr>
+  <tr valign="top"><td><em>Highlevel-Parameter</em></td><td></td><td></td></tr>
+    <tr valign="top"><td></td><td><code>src</code></td><td>Konto</td><td>obligatorisch</td><td>Belastungskonto des Kunden. Entscheidend sind gesetzte Werte 
+                                                                                               für <code>bic</code>, <code>iban</code> und <code>name</code></td></tr>
+    <tr valign="top"><td></td><td><code>dst</code></td><td>Konto</td><td>obligatorisch</td><td>Konto, auf dem der Betrag gutgeschrieben werden soll. Entscheidend sind auch hier gesetzte Werte 
+                                                                                               für <code>bic</code>, <code>iban</code> und <code>name</code></td></tr>
+    <tr valign="top"><td></td><td><code>btg</code></td><td>Value</td><td>obligatorisch</td><td>Geldbetrag, der überwiesen werden soll. Die Währung muss immer <code>EUR</code> sein</td></tr>
+    <tr valign="top"><td></td><td><code>usage</code></td><td>String</td><td>optional</td><td>Verwendungszweck (max. 140 Zeichen)</td></tr>
   <tr valign="top"><td><em>Rückgabedaten-Klasse</em></td><td><a href="../GV_Result/HBCIJobResult.html"><code>HBCIJobResult</code></a></td><td></td></tr>
 </table>
 

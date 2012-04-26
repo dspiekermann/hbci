@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIPassportInternal.java 94 2008-11-28 15:15:01Z kleiner $
+/*  $Id: HBCIPassportInternal.java,v 1.1 2011/05/04 22:37:43 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -53,7 +53,6 @@ public interface HBCIPassportInternal
     public boolean needUserSig();
     public void setInstSigKey(HBCIKey key);
     public void setInstEncKey(HBCIKey key);
-    public void setInstDigKey(HBCIKey key);
     public void clearMySigKey();
     public void clearMyEncKey();
     public void clearMyDigKey();
@@ -70,9 +69,6 @@ public interface HBCIPassportInternal
     public String getInstEncKeyName();
     public String getInstEncKeyNum();
     public String getInstEncKeyVersion();
-    public String getInstDigKeyName();
-    public String getInstDigKeyNum();
-    public String getInstDigKeyVersion();
 
     public String getMySigKeyName();
     public String getMySigKeyNum();
@@ -103,6 +99,7 @@ public interface HBCIPassportInternal
     public void setProfileVersion(String version);
 
     public HBCIKey[][] generateNewUserKeys();
+    public byte[] hash(byte[] data);
     public byte[] sign(byte[] data);
     public boolean verify(byte[] data,byte[] sig);
     public byte[][] encrypt(byte[] plainMsg);

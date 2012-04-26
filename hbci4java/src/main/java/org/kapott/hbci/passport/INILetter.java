@@ -1,5 +1,5 @@
 
-/*  $Id: INILetter.java 138 2009-07-26 10:11:13Z kleiner $
+/*  $Id: INILetter.java,v 1.1 2011/05/04 22:37:42 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -28,10 +28,10 @@ import java.security.MessageDigest;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
+import org.kapott.cryptalgs.SignatureParamSpec;
 import org.kapott.hbci.exceptions.HBCI_Exception;
 import org.kapott.hbci.manager.HBCIKey;
 import org.kapott.hbci.manager.HBCIUtils;
-import org.kapott.hbci.security.SignatureParamSpec;
 
 /** Hilfsklasse für das Erzeugen von INI-Briefen (für RDH-Zugänge). Diese Klasse
     ermöglicht das Erzeugen von INI-Briefen. Dazu werden Methoden bereitgestellt,

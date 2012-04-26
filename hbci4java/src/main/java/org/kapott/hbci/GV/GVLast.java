@@ -1,5 +1,5 @@
 
-/*  $Id: GVLast.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: GVLast.java,v 1.1 2011/05/04 22:37:53 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -27,7 +27,6 @@ import org.kapott.hbci.GV_Result.HBCIJobResultImpl;
 import org.kapott.hbci.manager.HBCIHandler;
 import org.kapott.hbci.manager.HBCIUtilsInternal;
 import org.kapott.hbci.manager.LogFilter;
-import org.kapott.hbci.passport.HBCIPassport;
 
 public class GVLast
     extends HBCIJobImpl
@@ -41,19 +40,17 @@ public class GVLast
     {
         super(handler,getLowlevelName(),new HBCIJobResultImpl());
 
-        HBCIPassport passport=handler.getPassport();
+        addConstraint("my.country","My.KIK.country","DE", LogFilter.FILTER_NONE);
+        addConstraint("my.blz","My.KIK.blz",null, LogFilter.FILTER_MOST);
         addConstraint("my.number","My.number",null, LogFilter.FILTER_IDS);
         addConstraint("my.subnumber","My.subnumber","", LogFilter.FILTER_MOST);
+        addConstraint("other.country","Other.KIK.country","DE", LogFilter.FILTER_NONE);
         addConstraint("other.blz","Other.KIK.blz",null, LogFilter.FILTER_MOST);
         addConstraint("other.number","Other.number",null, LogFilter.FILTER_IDS);
         addConstraint("other.subnumber","Other.subnumber","", LogFilter.FILTER_MOST);
         addConstraint("btg.value","BTG.value",null, LogFilter.FILTER_MOST);
         addConstraint("btg.curr","BTG.curr",null, LogFilter.FILTER_NONE);
         addConstraint("name","name",null, LogFilter.FILTER_IDS);
-
-        addConstraint("my.blz","My.KIK.blz",passport.getUPD().getProperty("KInfo.KTV.KIK.blz"), LogFilter.FILTER_MOST);
-        addConstraint("my.country","My.KIK.country",passport.getUPD().getProperty("KInfo.KTV.KIK.country"), LogFilter.FILTER_NONE);
-        addConstraint("other.country","Other.KIK.country",passport.getCountry(), LogFilter.FILTER_NONE);
         addConstraint("name2","name2","", LogFilter.FILTER_IDS);
         addConstraint("type","key","05", LogFilter.FILTER_NONE);
 

@@ -1,5 +1,5 @@
 
-/*  $Id: CommPinTan.java 175 2009-10-14 12:08:41Z kleiner $
+/*  $Id: CommPinTan.java,v 1.1 2011/05/04 22:37:50 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -109,14 +109,25 @@ public final class CommPinTan
 
             HBCIUtils.log("connecting to server",HBCIUtils.LOG_DEBUG);
             conn=(HttpURLConnection)url.openConnection();
-            HttpsURLConnection connSSL=(HttpsURLConnection)conn;
-            connSSL.setSSLSocketFactory(mySocketFactory);
             
-            if (!((AbstractPinTanPassport)getParentPassport()).getCheckCert()) {
-            	// checkcert=0 --> use dummy hostname verifier that always succeeds
-            	HBCIUtils.log("activating modified hostname verifier because cert checking is disabled", 
-            	        HBCIUtils.LOG_DEBUG);
-            	connSSL.setHostnameVerifier(myHostnameVerifier);
+            boolean checkCert=((AbstractPinTanPassport)getParentPassport()).getCheckCert();
+            boolean debugging=((PinTanSSLSocketFactory)this.mySocketFactory).debug();
+            if (!checkCert || debugging) {
+                // if we have to disable cert checking or enable ssl logging,
+                // we have to set some special SSL stuff on the connection object
+                HttpsURLConnection connSSL=(HttpsURLConnection)conn;
+                
+                HBCIUtils.log("activating modified socket factory for"
+                    +" checkCert="+checkCert+" and debugging="+debugging, 
+                    HBCIUtils.LOG_DEBUG);
+                connSSL.setSSLSocketFactory(this.mySocketFactory);
+                
+                if (!checkCert) {
+                    // checkcert=0 --> use dummy hostname verifier that always succeeds
+                    HBCIUtils.log("activating modified hostname verifier because cert checking is disabled", 
+                        HBCIUtils.LOG_DEBUG);
+                    connSSL.setHostnameVerifier(this.myHostnameVerifier);
+                }
             }
             
             conn.setDoOutput(true);

@@ -1,5 +1,5 @@
 
-/*  $Id: InvalidSegSeqException.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: InvalidSegSeqException.java,v 1.1 2011/05/04 22:38:00 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme

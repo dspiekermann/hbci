@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIJob.java 178 2009-10-15 15:04:02Z kleiner $
+/*  $Id: HBCIJob.java,v 1.1 2011/05/04 22:37:53 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -57,6 +57,9 @@ public interface HBCIJob
     /** Gibt den internen Namen für diesen Job zurück.
      * @return Job-Name, wie er intern von <em>HBCI4Java</em> verwendet wird. */
     public String getName();
+    
+    /** Gibt die für diesen Job verwendete Segment-Versionsnummer zurück */
+    public String getSegVersion();
 
     /** <p>Gibt zurück, wieviele Signaturen für diesen Job mindestens benötigt werden.
      *  Diese Information wird den BPD entnommen. In einigen Fällen gibt es
@@ -146,16 +149,15 @@ public interface HBCIJob
     public Properties getLowlevelParams();
 
     /** Setzen eines komplexen Job-Parameters (Kontodaten). Einige Jobs benötigten Kontodaten
-     als Parameter. Diese müssten auf "normalem" Wege durch fünf Aufrufe von 
-     {@link #setParam(String,String)} erzeugt werden (je einer für
-     die Länderkennung, die Bankleitzahl, die Kontonummer und optional das Unterkontomerkmal
-     und Währung). 
+     als Parameter. Diese müssten auf "normalem" Wege durch mehrere Aufrufe von 
+     {@link #setParam(String,String)} erzeugt werden (Länderkennung, Bankleitzahl, 
+     Kontonummer, Unterkontomerkmal, Währung, IBAN, BIC).
      Durch Verwendung dieser Methode wird dieser Weg abgekürzt. Es wird ein Kontoobjekt 
-     übergeben, für welches die entsprechenden fünf <code>setParam(String,String)</code>-Aufrufe 
+     übergeben, für welches die entsprechenden <code>setParam(String,String)</code>-Aufrufe 
      automatisch erzeugt werden. 
-     @param paramname die Basis der Parameter für die Kontodaten (für "<code>my.country</code>",
-     "<code>my.blz</code>", "<code>my.number</code>", "<code>my.subnumber</code> und
-     <code>my.curr</code>" wäre das also "<code>my</code>")
+     @param paramname die Basis der Parameter für die Kontodaten (für <code>my.country</code>,
+     <code>my.blz</code>, <code>my.number</code>, <code>my.subnumber</code>, <code>my.bic</code>, 
+     <code>my.iban</code>, <code>my.curr</code> wäre das also "<code>my</code>")
      @param acc ein Konto-Objekt, aus welchem die zu setzenden Parameterdaten entnommen werden */
     public void setParam(String paramname,Konto acc);
 

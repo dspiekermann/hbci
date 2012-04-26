@@ -1,5 +1,5 @@
 
-/*  $Id: Swift.java 180 2009-10-16 06:17:59Z kleiner $
+/*  $Id: Swift.java,v 1.1 2011/05/04 22:38:03 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -20,6 +20,10 @@
 */
 
 package org.kapott.hbci.swift;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 
 public class Swift
@@ -42,8 +46,9 @@ public class Swift
 
     public static String getTagValue(String st,String tag,int counter)
     {
-        String ret=null;
-
+        String  ret=null;
+        Pattern patternNLTag=Pattern.compile("\\r\\n:\\d{2}[A-Z]?:");
+        
         int endpos=0;
         while (true) {
             ret=null;
@@ -51,14 +56,20 @@ public class Swift
             // find start-posi of the requested tag
             int startpos=st.indexOf("\r\n:"+tag+":",endpos);
             if (startpos!=-1) {
+                // skip \r\n:XY: of start tag
+                startpos+=3+tag.length()+1;
+                
                 // tag found - find start of next tag
-                endpos=st.indexOf("\r\n:",startpos+3);
-                if (endpos==-1) {
+                Matcher matcher=patternNLTag.matcher(st);
+                if (matcher.find(startpos)) {
+                    endpos=matcher.start();
+                } else {
                     /* no next tag found - use end of stream without the
                      * trailing \r\n- */
                     endpos=st.length()-3;
-                }
-                ret=st.substring(startpos+3+tag.length()+1, endpos);
+                } 
+                
+                ret=st.substring(startpos, endpos);
             }
 
             if ((counter--)==0 || startpos==-1) {

@@ -1,5 +1,5 @@
 
-/*  $Id: GVDauerDel.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: GVDauerDel.java,v 1.1 2011/05/04 22:37:54 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -29,7 +29,6 @@ import org.kapott.hbci.exceptions.InvalidUserDataException;
 import org.kapott.hbci.manager.HBCIHandler;
 import org.kapott.hbci.manager.HBCIUtilsInternal;
 import org.kapott.hbci.manager.LogFilter;
-import org.kapott.hbci.passport.HBCIPassport;
 
 public final class GVDauerDel
     extends HBCIJobImpl
@@ -43,7 +42,6 @@ public final class GVDauerDel
     {
         super(handler,getLowlevelName(),new HBCIJobResultImpl());
         
-        HBCIPassport passport=handler.getPassport();
         addConstraint("src.number","My.number","", LogFilter.FILTER_IDS);
         addConstraint("src.subnumber","My.subnumber","", LogFilter.FILTER_MOST);
         addConstraint("dst.blz","Other.KIK.blz","", LogFilter.FILTER_MOST);
@@ -57,9 +55,9 @@ public final class GVDauerDel
         addConstraint("turnus","DauerDetails.turnus","", LogFilter.FILTER_NONE);
         addConstraint("execday","DauerDetails.execday","", LogFilter.FILTER_NONE);
 
-        addConstraint("src.blz","My.KIK.blz",passport.getUPD().getProperty("KInfo.KTV.KIK.blz"), LogFilter.FILTER_MOST);
-        addConstraint("src.country","My.KIK.country",passport.getUPD().getProperty("KInfo.KTV.KIK.country"), LogFilter.FILTER_NONE);
-        addConstraint("dst.country","Other.KIK.country",passport.getCountry(), LogFilter.FILTER_NONE);
+        addConstraint("src.blz","My.KIK.blz",null, LogFilter.FILTER_MOST);
+        addConstraint("src.country","My.KIK.country","DE", LogFilter.FILTER_NONE);
+        addConstraint("dst.country","Other.KIK.country","DE", LogFilter.FILTER_NONE);
         addConstraint("name2","name2","", LogFilter.FILTER_IDS);
         addConstraint("key","key","52", LogFilter.FILTER_NONE);
         addConstraint("date","date","", LogFilter.FILTER_NONE);

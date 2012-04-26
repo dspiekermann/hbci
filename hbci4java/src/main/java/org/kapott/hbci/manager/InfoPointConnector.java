@@ -1,5 +1,5 @@
 
-/*  $Id: InfoPointConnector.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: InfoPointConnector.java,v 1.1 2011/05/04 22:37:46 willuhn Exp $
 
     This file is part of hbci4java
     Copyright (C) 2001-2008  Stefan Palme

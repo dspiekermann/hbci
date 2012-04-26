@@ -1,5 +1,5 @@
 
-/*  $Id: AbstractDDVPassport.java 142 2009-07-28 12:08:15Z kleiner $
+/*  $Id: AbstractDDVPassport.java,v 1.1 2011/05/04 22:37:43 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -74,11 +74,6 @@ public abstract class AbstractDDVPassport
         return false;
     }
     
-    public boolean needDigKey()
-    {
-        return false;
-    }
-
     public boolean hasInstSigKey()
     {
         return true;
@@ -87,11 +82,6 @@ public abstract class AbstractDDVPassport
     public boolean hasInstEncKey()
     {
         return true;
-    }
-    
-    public boolean hasInstDigKey()
-    {
-        return false;
     }
     
     public boolean hasMySigKey()

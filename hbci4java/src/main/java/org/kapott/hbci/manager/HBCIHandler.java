@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIHandler.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: HBCIHandler.java,v 1.2 2011/08/31 14:05:21 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -156,6 +156,13 @@ public final class HBCIHandler
      * BIC/IBAN geliefert */
     private void updateSEPAInfo()
     {
+        Properties bpd = passport.getBPD();
+        if (bpd == null)
+        {
+          HBCIUtils.log("have no bpd, skipping SEPA information fetching", HBCIUtils.LOG_WARN);
+          return;
+        }
+
         // jetzt noch zusaetzliche die SEPA-Informationen abholen
         try {
         	if (getSupportedLowlevelJobs().getProperty("SEPAInfo")!=null) {
@@ -183,8 +190,14 @@ public final class HBCIHandler
         	} else {
         		HBCIUtils.log("institute does not support SEPA accounts, so we skip fetching information about SEPA", HBCIUtils.LOG_DEBUG);
         	}
-        } catch (Exception e) {
-        	throw new HBCI_Exception();
+        }
+        catch (HBCI_Exception he)
+        {
+          throw he;
+        }
+        catch (Exception e)
+        {
+        	throw new HBCI_Exception(e);
         }
     }
     
@@ -334,9 +347,9 @@ public final class HBCIHandler
         HBCIJobImpl ret=new GVTemplate(gvname,this);
         return ret;
     }
-
-    /** @deprecated use {@link org.kapott.hbci.GV.HBCIJob#addToQueue(String) HBCIJob.addToQueue(String)} instead */
-    public void addJob(String customerId,HBCIJob job)
+    
+    /** Do NOT use! Use {@link org.kapott.hbci.GV.HBCIJob#addToQueue(String)} instead */
+    public void addJobToDialog(String customerId,HBCIJob job)
     {
         // TODO: nach dem neuen Objekt-Graph kennt der HBCIJob bereits "seinen"
         // HBCIHandler, so dass ein HBCIHandler.addJob(job) eigentlich
@@ -364,7 +377,19 @@ public final class HBCIHandler
             }
         }
     }
+
+    /** @deprecated use {@link org.kapott.hbci.GV.HBCIJob#addToQueue(String) HBCIJob.addToQueue(String)} instead */
+    public void addJob(String customerId,HBCIJob job)
+    {
+        addJobToDialog(customerId,job);
+    }
     
+    /** @deprecated use {@link org.kapott.hbci.GV.HBCIJob#addToQueue() HBCIJob.addToQueue()} instead */
+    public void addJob(HBCIJob job)
+    {
+        addJob(null,job);
+    }
+
     /** Erzeugen eines leeren HBCI-Dialoges. <p>Im Normalfall werden HBCI-Dialoge
      * automatisch erzeugt, wenn Geschäftsvorfälle mit der Methode {@link org.kapott.hbci.GV.HBCIJob#addToQueue(String)}
      * zur Liste der auszuführenden Jobs hinzugefügt werden. <code>createEmptyDialog()</code>
@@ -389,12 +414,6 @@ public final class HBCIHandler
         createEmptyDialog(null);
     }
     
-    /** @deprecated use {@link org.kapott.hbci.GV.HBCIJob#addToQueue() HBCIJob.addToQueue()} instead */
-    public void addJob(HBCIJob job)
-    {
-        addJob(null,job);
-    }
-
     /** <p>Ausführen aller bisher erzeugten Aufträge. Diese Methode veranlasst den HBCI-Kernel,
         die Aufträge, die durch die Aufrufe der Methode 
         {@link org.kapott.hbci.GV.HBCIJob#addToQueue(String)}
@@ -947,7 +966,10 @@ hbciHandle=new HBCIHandle(hbciversion,passport);
         }
 
         reset();
-        getDialogFor(passport.getCustomerId());
-        return (HBCIDialogStatus)execute().getDialogStatusList().get(0);
+        
+        String customerId=passport.getCustomerId();
+        getDialogFor(customerId);
+        HBCIDialogStatus result=execute().getDialogStatus(customerId);
+        return result;
     }
 }

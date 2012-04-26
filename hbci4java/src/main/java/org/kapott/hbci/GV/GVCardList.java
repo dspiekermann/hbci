@@ -1,5 +1,5 @@
 
-/*  $Id: GVCardList.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: GVCardList.java,v 1.1 2011/05/04 22:37:53 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -28,7 +28,6 @@ import org.kapott.hbci.GV_Result.GVRCardList;
 import org.kapott.hbci.manager.HBCIHandler;
 import org.kapott.hbci.manager.HBCIUtils;
 import org.kapott.hbci.manager.LogFilter;
-import org.kapott.hbci.passport.HBCIPassport;
 import org.kapott.hbci.status.HBCIMsgStatus;
 import org.kapott.hbci.structures.Value;
 
@@ -44,11 +43,10 @@ public class GVCardList
    {
        super(handler,getLowlevelName(),new GVRCardList());
        
-       HBCIPassport passport=handler.getPassport();
-       addConstraint("my.country","KTV.KIK.country",passport.getUPD().getProperty("KInfo.KTV.KIK.country"), LogFilter.FILTER_NONE);
-       addConstraint("my.blz","KTV.KIK.blz",passport.getUPD().getProperty("KInfo.KTV.KIK.blz"), LogFilter.FILTER_MOST);
-       addConstraint("my.number","KTV.number",passport.getUPD().getProperty("KInfo.KTV.number"), LogFilter.FILTER_IDS);
-       addConstraint("my.subnumber","KTV.subnumber",passport.getUPD().getProperty("KInfo.KTV.subnumber",""), LogFilter.FILTER_MOST);
+       addConstraint("my.country","KTV.KIK.country","DE", LogFilter.FILTER_NONE);
+       addConstraint("my.blz","KTV.KIK.blz",null, LogFilter.FILTER_MOST);
+       addConstraint("my.number","KTV.number",null, LogFilter.FILTER_IDS);
+       addConstraint("my.subnumber","KTV.subnumber","", LogFilter.FILTER_MOST);
    }
    
    public void extractResults(HBCIMsgStatus msgstatus,String header,int idx)

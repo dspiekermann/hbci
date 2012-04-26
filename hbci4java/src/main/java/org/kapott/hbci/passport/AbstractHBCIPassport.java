@@ -1,5 +1,5 @@
 
-/*  $Id: AbstractHBCIPassport.java 181 2009-10-16 06:21:35Z kleiner $
+/*  $Id: AbstractHBCIPassport.java,v 1.4 2012/03/13 22:07:43 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -23,6 +23,7 @@ package org.kapott.hbci.passport;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -136,7 +137,7 @@ public abstract class AbstractHBCIPassport
 
         if (needPort && 
             (getPort()==null || getPort().intValue()==0)) {
-            StringBuffer sb=new StringBuffer("3000");
+            StringBuffer sb=new StringBuffer((this instanceof AbstractPinTanPassport) ? "443" : "3000");
             HBCIUtilsInternal.getCallback().callback(this,HBCICallback.NEED_PORT,HBCIUtilsInternal.getLocMsg("PORT"),HBCICallback.TYPE_TEXT,sb);
             if (sb.length()==0)
                 throw new InvalidUserDataException(HBCIUtilsInternal.getLocMsg("EXCMSG_EMPTY_X",HBCIUtilsInternal.getLocMsg("PORT")));
@@ -245,6 +246,7 @@ public abstract class AbstractHBCIPassport
                 entry.blz=upd.getProperty(header+".KTV.KIK.blz");
                 entry.country=upd.getProperty(header+".KTV.KIK.country");
                 entry.number=number;
+                entry.subnumber=upd.getProperty(header+".KTV.subnumber");
                 entry.curr=upd.getProperty(header+".cur");
                 entry.type=upd.getProperty(header+".konto");
                 entry.customerid=upd.getProperty(header+".customerid");
@@ -379,11 +381,6 @@ public abstract class AbstractHBCIPassport
         setInstEncKey(null);
     }
 
-    public final void clearInstDigKey()
-    {
-        setInstDigKey(null);
-    }
-    
     public final void clearMySigKey()
     {
         setMyPublicSigKey(null);
@@ -426,7 +423,7 @@ public abstract class AbstractHBCIPassport
 
     public final int getMaxMsgSizeKB()
     {
-        return (bpd!=null)?Integer.parseInt(bpd.getProperty("BPA.maxmsgsize")):0;
+        return (bpd!=null)?Integer.parseInt(bpd.getProperty("BPA.maxmsgsize","0")):0;
     }
 
     public final String[] getSuppLangs()
@@ -664,7 +661,7 @@ public abstract class AbstractHBCIPassport
           <li>RDH (nicht mehr benutzen!)</li>
           <li>PinTan</li>
           <li>SIZRDHFile</li>
-          <li>RDH2File</li>
+          <li>RDHXFile</li>
           <li>Anonymous</li>
         </ul></p>
         <p>Der zusätzliche Parameter <code>init</code> gibt ein Objekt an, welches
@@ -708,10 +705,26 @@ public abstract class AbstractHBCIPassport
             Constructor con=cl.getConstructor(new Class[] {Object.class});
             HBCIPassport p=(HBCIPassport)(con.newInstance(new Object[] {init}));
             return p;
-        } catch (ClassNotFoundException e) {
-            throw new InvalidUserDataException("*** No passport implementation '"+name+"' found - there must be a class "+className);
-        } catch (Exception e) {
-            throw new HBCI_Exception(HBCIUtilsInternal.getLocMsg("EXCMSG_PASSPORT_INST",name),e); 
+        }
+        catch (ClassNotFoundException e)
+        {
+          throw new InvalidUserDataException("*** No passport implementation '"+name+"' found - there must be a class "+className);
+        }
+        catch (InvocationTargetException ite)
+        {
+          Throwable cause = ite.getCause();
+          if (cause instanceof HBCI_Exception)
+            throw (HBCI_Exception) cause;
+          
+          throw new HBCI_Exception(HBCIUtilsInternal.getLocMsg("EXCMSG_PASSPORT_INST",name),ite);
+        }
+        catch (HBCI_Exception he)
+        {
+          throw he;
+        }
+        catch (Exception e)
+        {
+          throw new HBCI_Exception(HBCIUtilsInternal.getLocMsg("EXCMSG_PASSPORT_INST",name),e); 
         }
     }
 
@@ -935,7 +948,7 @@ public abstract class AbstractHBCIPassport
         byte[] result=buffer;
         
         if (buffer.length!=size) {
-            HBCIUtils.log("checking for crypted_data_length=="+size+"; current length is "+buffer.length,HBCIUtils.LOG_WARN);
+            HBCIUtils.log("checking for crypted_data_length=="+size+"; current length is "+buffer.length,HBCIUtils.LOG_DEBUG);
             if (buffer.length>size) {
                 int diff=buffer.length-size;
                 boolean ok=true;
@@ -948,7 +961,7 @@ public abstract class AbstractHBCIPassport
                 }
 
                 if (ok) {
-                    HBCIUtils.log("removing "+diff+" unnecessary null-bytes from crypted_data",HBCIUtils.LOG_WARN);
+                    HBCIUtils.log("removing "+diff+" unnecessary null-bytes from crypted_data",HBCIUtils.LOG_DEBUG);
                     result=new byte[size];
                     System.arraycopy(buffer,diff,result,0,size);
                 }

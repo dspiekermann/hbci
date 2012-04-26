@@ -1,5 +1,5 @@
 
-/*  $Id: GVRKUms.java 179 2009-10-15 19:20:55Z kleiner $
+/*  $Id: GVRKUms.java,v 1.3 2012/01/27 22:52:25 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -468,8 +468,14 @@ public class GVRKUms
                     // extract bdate
                     int next=0;
                     if (st_ums.charAt(6)>'9') {
-                        line.bdate=line.valuta;
+                        // [2012-01-27 - Patch von Frank/Pecunia]
+                        // beim :61er Tag ist das Buchungsdatum optional. Wenn es nicht gesetzt ist, muss das Buchungsdatum des
+                        // Umsatzes z.B. aus :60F kommen
+                        if (btag.start !=  null && btag.start.timestamp != null) line.bdate = btag.start.timestamp;
+                        else line.bdate=line.valuta;
+                        
                         next=6;
+                        
                     } else {
                         line.bdate=dateFormat.parse(st_ums.substring(0,2)+
                             st_ums.substring(6,10));
@@ -477,6 +483,7 @@ public class GVRKUms
                         // wenn bdate und valuta um mehr als einen monat voneinander
                         // abweichen, dann ist das jahr des bdate falsch (1.1.2005 vs. 31.12.2004)
                         // korrektur des bdate-jahres in die richtige richtung notwendig
+                        // TODO: YEAR-Auto-Complete. Das kann fehlschlagen. Siehe http://www.onlinebanking-forum.de/phpBB2/viewtopic.php?p=75348
                         if (Math.abs(line.bdate.getTime()-line.valuta.getTime())>30L*24*3600*1000) {
                             int diff;
                             
@@ -576,9 +583,16 @@ public class GVRKUms
                             if (slashpos==-1)
                                 slashpos=st_ums.length();
                             
-                            line.orig_value=new Value(
-                                st_ums.substring(pos+9,slashpos).replace(',','.'),
-                                st_ums.substring(pos+6,pos+9));
+                            try
+                            {
+                              line.orig_value=new Value(
+                                  st_ums.substring(pos+9,slashpos).replace(',','.'),
+                                  st_ums.substring(pos+6,pos+9));
+                            }
+                            catch (NumberFormatException nfe)
+                            {
+                              // Der Betrag darf fehlen. Tolerieren wir
+                            }
                         }
                         
                         // extract charge Value
@@ -587,10 +601,17 @@ public class GVRKUms
                             int slashpos=st_ums.indexOf("/",pos+9);
                             if (slashpos==-1)
                                 slashpos=st_ums.length();
-                            
-                            line.charge_value=new Value(
-                                st_ums.substring(pos+9,slashpos).replace(',','.'),
-                                st_ums.substring(pos+6,pos+9));
+
+                            try
+                            {
+                              line.charge_value=new Value(
+                                  st_ums.substring(pos+9,slashpos).replace(',','.'),
+                                  st_ums.substring(pos+6,pos+9));
+                            }
+                            catch (NumberFormatException nfe)
+                            {
+                              // Der Betrag darf fehlen. Tolerieren wir
+                            }
                         }
                     }
                     
@@ -664,7 +685,7 @@ public class GVRKUms
                     }
 
                     // set default values for optional non-given bdates
-                    if (btag.start.timestamp==null) {
+                    if (btag.start != null && btag.start.timestamp==null) {
                         btag.start.timestamp=btag.end.timestamp;
                     }
                     for (Iterator j=btag.lines.iterator(); j.hasNext(); ) {

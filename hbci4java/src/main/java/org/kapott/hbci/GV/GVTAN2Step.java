@@ -1,5 +1,5 @@
 
-/*  $Id: GVTAN2Step.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: GVTAN2Step.java,v 1.6 2011/05/27 10:28:38 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -57,17 +57,30 @@ public class GVTAN2Step
         
         addConstraint("storno","storno","", LogFilter.FILTER_NONE);
         addConstraint("challengeklass","challengeklass","", LogFilter.FILTER_NONE);
-        addConstraint("ChallengeKlassParam1", "ChallengeKlassParams.param","", LogFilter.FILTER_IDS);
-        addConstraint("ChallengeKlassParam2", "ChallengeKlassParams.param_2","", LogFilter.FILTER_IDS);
-        addConstraint("ChallengeKlassParam3", "ChallengeKlassParams.param_3","", LogFilter.FILTER_IDS);
-        addConstraint("ChallengeKlassParam4", "ChallengeKlassParams.param_4","", LogFilter.FILTER_IDS);
-        addConstraint("ChallengeKlassParam5", "ChallengeKlassParams.param_5","", LogFilter.FILTER_IDS);
-        addConstraint("ChallengeKlassParam6", "ChallengeKlassParams.param_6","", LogFilter.FILTER_IDS);
-        addConstraint("ChallengeKlassParam7", "ChallengeKlassParams.param_7","", LogFilter.FILTER_IDS);
-        addConstraint("ChallengeKlassParam8", "ChallengeKlassParams.param_8","", LogFilter.FILTER_IDS);
-        addConstraint("ChallengeKlassParam9", "ChallengeKlassParams.param_9","", LogFilter.FILTER_IDS);
-        
-        // TODO: tanmedia fehlt
+        addConstraint("ChallengeKlassParam1", "ChallengeKlassParams.param1","", LogFilter.FILTER_IDS);
+        addConstraint("ChallengeKlassParam2", "ChallengeKlassParams.param2","", LogFilter.FILTER_IDS);
+        addConstraint("ChallengeKlassParam3", "ChallengeKlassParams.param3","", LogFilter.FILTER_IDS);
+        addConstraint("ChallengeKlassParam4", "ChallengeKlassParams.param4","", LogFilter.FILTER_IDS);
+        addConstraint("ChallengeKlassParam5", "ChallengeKlassParams.param5","", LogFilter.FILTER_IDS);
+        addConstraint("ChallengeKlassParam6", "ChallengeKlassParams.param6","", LogFilter.FILTER_IDS);
+        addConstraint("ChallengeKlassParam7", "ChallengeKlassParams.param7","", LogFilter.FILTER_IDS);
+        addConstraint("ChallengeKlassParam8", "ChallengeKlassParams.param8","", LogFilter.FILTER_IDS);
+        addConstraint("ChallengeKlassParam9", "ChallengeKlassParams.param9","", LogFilter.FILTER_IDS);
+
+        addConstraint("tanmedia", "tanmedia","", LogFilter.FILTER_IDS);
+
+        addConstraint("ordersegcode", "ordersegcode","", LogFilter.FILTER_NONE);
+
+        addConstraint("orderaccount.number","OrderAccount.number",null, LogFilter.FILTER_IDS);
+        addConstraint("orderaccount.subnumber","OrderAccount.subnumber","", LogFilter.FILTER_MOST);
+        addConstraint("orderaccount.blz","OrderAccount.KIK.blz",null, LogFilter.FILTER_MOST);
+        addConstraint("orderaccount.country","OrderAccount.KIK.country","DE", LogFilter.FILTER_NONE);
+
+        // willuhn 2011-05-17 wird noch nicht genutzt
+        // addConstraint("smsaccount.number","SMSAccount.number",null, LogFilter.FILTER_IDS);
+        // addConstraint("smsaccount.subnumber","SMSAccount.subnumber","", LogFilter.FILTER_MOST);
+        // addConstraint("smsaccount.blz","SMSAccount.KIK.blz",null, LogFilter.FILTER_MOST);
+        // addConstraint("smsaccount.country","SMSAccount.KIK.country","DE", LogFilter.FILTER_NONE);
     }
     
     public void setParam(String paramName, String value)
@@ -128,6 +141,14 @@ public class GVTAN2Step
                 
                 // TODO: hier noch die optionale DEG ChallengeValidity bereitstellen
             }
+
+            // willuhn 2011-05-27 Challenge HHDuc aus dem Reponse holen und im Passport zwischenspeichern
+            String hhdUc = result.getProperty(header + ".challenge_hhd_uc");
+            if (hhdUc != null)
+            {
+              HBCIUtils.log("found Challenge HHDuc '" + hhdUc + "' in HITAN - saving it temporarily in passport",HBCIUtils.LOG_DEBUG);
+              getMainPassport().setPersistentData("pintan_challenge_hhd_uc",hhdUc);
+            }
             
             String orderref=result.getProperty(header+".orderref");
             if (orderref!=null) {
@@ -144,7 +165,6 @@ public class GVTAN2Step
                     HBCIUtils.log("no other HKTAN task known - ignoring orderref",HBCIUtils.LOG_DEBUG);
                 }
             }
-            
         }
     }
 }

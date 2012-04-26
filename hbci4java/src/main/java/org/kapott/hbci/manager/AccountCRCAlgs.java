@@ -1,5 +1,5 @@
 
-/*  $Id: AccountCRCAlgs.java 183 2009-10-16 12:34:49Z kleiner $
+/*  $Id: AccountCRCAlgs.java,v 1.1 2011/05/04 22:37:46 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -92,14 +92,14 @@ public class AccountCRCAlgs
 
     public static boolean alg_08(int[] blz, int[] number) 
     {
-        /* TODO: Spez: Die Berechnung erfolgt wie bei Verfahren 00, jedoch erst 
-         * ab der Kontonummer 60 000 (das heißt wohl 0000060000 -> so kleine
-         * Nummern werden in der Praxis nicht vorkommen, deswegen ignorieren
-         * wir diese Einschränkung hier */
-
-        int sum=addProducts(number,0,8,new int[] {2,1,2,1,2,1,2,1,2}, true);
-        int crc=(10-sum%10)%10;
-        return number[9]==crc;
+        boolean result=true;
+        long    bigint=calculateIntFromNumber(number);
+        if (bigint>=60000) {
+            int sum=addProducts(number,0,8,new int[] {2,1,2,1,2,1,2,1,2}, true);
+            int crc=(10-sum%10)%10;
+            result=(number[9]==crc);
+        } 
+        return result;
     }
 
     public static boolean alg_09(int[] blz, int[] number) 
@@ -1182,8 +1182,12 @@ public class AccountCRCAlgs
         }
 
         // Methode C
+        /* TODO: einige kontonummern werden laut spez hier ausgeschlossen */
         sum = addProducts(number, 4, 8, new int[] {6, 5, 4, 3, 2}, false);
         crc = 7-sum%7;
+        if (crc==7) {
+            crc=0;
+        }
         if (number[9]==crc) {
             return true;
         }
@@ -1191,7 +1195,10 @@ public class AccountCRCAlgs
         // Methode D
         sum = addProducts(number, 4, 8, new int[] {6, 5, 4, 3, 2}, false);
         crc = 9-sum%9;
-        if (number[9]==crc&&number[9]!=9) {
+        if (crc==9) {
+            crc=0;
+        }
+        if (number[9]==crc && number[9]!=9) {
             return true;
         }
 
@@ -1239,7 +1246,7 @@ public class AccountCRCAlgs
     public static boolean alg_95(int[] blz, int[] number)
     {
         if (number[0]==0) {
-            int bigint=calculateIntFromNumber(number);
+            long bigint=calculateIntFromNumber(number);
             if (bigint>=1 && bigint<=1999999 ||
                     bigint>=9000000 && bigint<=25999999 ||
                     bigint>=396000000 && bigint<=499999999 ||
@@ -1260,7 +1267,7 @@ public class AccountCRCAlgs
     {
         boolean ret = false;
         if (!(ret = alg_19(blz,number)) && !(ret = alg_00(blz,number))) {
-            int bigint = 0;
+            long bigint = 0;
             if (number[0] == 0)
                 bigint = calculateIntFromNumber(number);
             if (bigint >= 1300000 && bigint <= 99399999)
@@ -1272,7 +1279,7 @@ public class AccountCRCAlgs
     
     public static boolean alg_99(int[] blz, int[] number) 
     {
-        int bigint = 0;
+        long bigint = 0;
         if (number[0] == 0)
             bigint = calculateIntFromNumber(number);
         boolean ret = true;
@@ -1564,21 +1571,21 @@ public class AccountCRCAlgs
     {
         int sum=0;
         while (x>0) {
-            sum += x%10; // einerstelle addieren
-            x   /= 10;   // x eine stelle nach rechts "verschieben"
+            sum+=x%10; // einerstelle addieren
+            x/=10; // x eine stelle nach rechts "verschieben"
         }
-        if (recursive && sum>=10) {
+        if (recursive&&sum>=10) {
             sum=quersumme(sum, true);
         }
         return sum;
     }
 
-    private static int calculateIntFromNumber(int[] number) 
+    private static long calculateIntFromNumber(int[] number) 
     {
-        int bigint = 0;
-        for (int i = 1; i < 10; i++) {
-            bigint *= 10;
-            bigint += number[i];
+        long bigint=0;
+        for (int i=0; i<10; i++) {
+            bigint*=10;
+            bigint+=number[i];
         }
         return bigint;
     }

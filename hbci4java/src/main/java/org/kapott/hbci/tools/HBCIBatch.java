@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIBatch.java 133 2009-04-23 07:50:52Z kleiner $
+/*  $Id: HBCIBatch.java,v 1.1 2011/05/04 22:37:45 willuhn Exp $
 
     This file is part of hbci4java
     Copyright (C) 2001-2008  Stefan Palme
@@ -41,7 +41,6 @@ import java.util.StringTokenizer;
 import org.kapott.hbci.GV.HBCIJob;
 import org.kapott.hbci.callback.HBCICallbackConsole;
 import org.kapott.hbci.exceptions.HBCI_Exception;
-import org.kapott.hbci.manager.FileSystemClassLoader;
 import org.kapott.hbci.manager.HBCIHandler;
 import org.kapott.hbci.manager.HBCIUtils;
 import org.kapott.hbci.manager.HBCIUtilsInternal;
@@ -148,6 +147,7 @@ public class HBCIBatch
                 PrintStream outStream=new PrintStream(new FileOutputStream(args[4]));
                 System.setOut(outStream);
                 System.setErr(outStream);
+                this.setOutStream(outStream);
             }
         }
         

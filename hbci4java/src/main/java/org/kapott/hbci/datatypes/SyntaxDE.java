@@ -1,5 +1,5 @@
 
-/*  $Id: SyntaxDE.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: SyntaxDE.java,v 1.1 2011/05/04 22:37:56 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -42,7 +42,7 @@ import org.kapott.hbci.manager.HBCIUtilsInternal;
 
     This is an abstract base class for all classes that will represent a certain HBCI-datatype.
 
-    @author $Author: kleiner $
+    @author $Author: willuhn $
 */
 public abstract class SyntaxDE
 {

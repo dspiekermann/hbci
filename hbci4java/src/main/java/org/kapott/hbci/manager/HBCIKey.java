@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIKey.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: HBCIKey.java,v 1.1 2011/05/04 22:37:46 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -36,6 +36,8 @@ import java.security.Key;
 public final class HBCIKey
      implements Serializable
 {
+    private static final long serialVersionUID =1L;
+    
     /** Ländercode des Schlüsselbesitzers */
     public String country;
     /** Bankleitzahl des Schlüsselbesitzers */
@@ -55,6 +57,7 @@ public final class HBCIKey
     /** Neues <code>HBCIKey</code>-Objekt erzeugen */
     public HBCIKey()
     {
+        // empty constructor
     }
 
     public HBCIKey(String country, String blz, String userid, String num, String version, Key key)
@@ -67,16 +70,17 @@ public final class HBCIKey
         this.key = key;
     }
     
+    @Override
     public String toString()
     {
         StringBuffer ret=new StringBuffer();
         
-        ret.append("country="+country);
-        ret.append(", blz="+blz);
-        ret.append(", userid="+userid);
-        ret.append(", num="+num);
-        ret.append(", version="+version);
-        ret.append(", key="+key);
+        ret.append("country="+this.country);
+        ret.append(", blz="+this.blz);
+        ret.append(", userid="+this.userid);
+        ret.append(", num="+this.num);
+        ret.append(", version="+this.version);
+        ret.append(", key="+this.key);
         
         return ret.toString();
     }

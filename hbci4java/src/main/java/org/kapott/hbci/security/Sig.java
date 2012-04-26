@@ -1,5 +1,5 @@
 
-/*  $Id: Sig.java 135 2009-07-24 21:50:39Z kleiner $
+/*  $Id: Sig.java,v 1.2 2012/03/27 21:33:13 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -325,8 +325,15 @@ public final class Sig
                         List                 sigtails=((MultipleSEGs)(msgelements.get(msgelements.size()-2))).getElements();
                         SEG                  sigtail=(SEG)sigtails.get(idx);
 
+                        /* first calculate hash-result, then sign the hashresult. In
+                         * most cases, the hash() step will be executed by the signature
+                         * algorithm, so the hash() call returns the message as-is.
+                         * Currently the only exception is PKCS#1-10, where an extra
+                         * round of hashing must be executed before applying the 
+                         * signature process */
                         String hashdata=collectHashData(idx);
-                        byte[] signature=passport.sign(hashdata.getBytes("ISO-8859-1"));
+                        byte[] hashresult=passport.hash(hashdata.getBytes("ISO-8859-1"));
+                        byte[] signature=passport.sign(hashresult);
 
                         if (passport.needUserSig()) {
                             String pintan=new String(signature,"ISO-8859-1");
@@ -402,7 +409,6 @@ public final class Sig
 
         u_role = msg.getValueOfDE(sigheadName + ".role");
         u_range = msg.getValueOfDE(sigheadName + ".range");
-        u_keyblz = msg.getValueOfDE(sigheadName + ".KeyName.KIK.blz");
         u_keycountry = msg.getValueOfDE(sigheadName + ".KeyName.KIK.country");
         u_keyuserid = msg.getValueOfDE(sigheadName + ".KeyName.userid");
         u_keynum = msg.getValueOfDE(sigheadName + ".KeyName.keynum");
@@ -411,7 +417,16 @@ public final class Sig
         u_sigalg = msg.getValueOfDE(sigheadName + ".SigAlg.alg");
         u_sigmode = msg.getValueOfDE(sigheadName + ".SigAlg.mode");
         u_hashalg = msg.getValueOfDE(sigheadName + ".HashAlg.alg");
-        
+
+        // Die Angabe der BLZ ist nicht unbedingt verpflichtend (für 280 aber schon...). Trotzdem gibt es wohl
+        // Banken die das nicht interessiert...
+        try {
+          u_keyblz = msg.getValueOfDE(sigheadName + ".KeyName.KIK.blz");
+        }
+        catch (Exception e) {
+          HBCIUtils.log("missing bank code in message signature, ignoring...",HBCIUtils.LOG_WARN);
+        }
+
         if (mainPassport.needUserSig()) {
             // TODO: bei anderen user-signaturen hier allgemeineren code schreiben
             Hashtable values=new Hashtable();
@@ -502,8 +517,15 @@ public final class Sig
                 if (hasSig()) {
                     readSigHead();
                     try {
-                        ret=mainPassport.verify(collectHashData(0,0).getBytes("ISO-8859-1"),
-                            sigstring.getBytes("ISO-8859-1"));
+                        /* first calculate hash-result, then verify the hashresult. In
+                         * most cases, the hash() step will be executed by the signature
+                         * algorithm, so the hash() call returns the message as-is.
+                         * Currently the only exception is PKCS#1-10, where an extra
+                         * round of hashing must be executed before applying the 
+                         * signature process */
+                        String hashdata=collectHashData(0,0);
+                        byte[] hashresult=mainPassport.hash(hashdata.getBytes("ISO-8859-1"));
+                        ret=mainPassport.verify(hashresult, sigstring.getBytes("ISO-8859-1"));
                     } catch (Exception e) {
                         ret=false;
                     }

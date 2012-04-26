@@ -1,5 +1,5 @@
 
-/*  $Id: AbstractPinTanPassport.java 94 2008-11-28 15:15:01Z kleiner $
+/*  $Id: AbstractPinTanPassport.java,v 1.6 2011/06/06 10:30:31 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -35,7 +35,6 @@ import org.kapott.hbci.GV.HBCIJob;
 import org.kapott.hbci.GV.HBCIJobImpl;
 import org.kapott.hbci.callback.HBCICallback;
 import org.kapott.hbci.comm.Comm;
-import org.kapott.hbci.datatypes.SyntaxWrt;
 import org.kapott.hbci.exceptions.HBCI_Exception;
 import org.kapott.hbci.exceptions.InvalidUserDataException;
 import org.kapott.hbci.manager.ChallengeInfo;
@@ -50,6 +49,7 @@ import org.kapott.hbci.security.Crypt;
 import org.kapott.hbci.security.Sig;
 import org.kapott.hbci.status.HBCIMsgStatus;
 import org.kapott.hbci.status.HBCIRetVal;
+import org.kapott.hbci.structures.Konto;
 
 public abstract class AbstractPinTanPassport 
     extends AbstractHBCIPassport
@@ -92,6 +92,17 @@ public abstract class AbstractPinTanPassport
             // bpd (HITANS) extrahieren
 
             twostepMechanisms.clear();
+            
+            // willuhn 2011-06-06 Maximal zulaessige HITANS-Segment-Version ermitteln
+            // Hintergrund: Es gibt User, die nur HHD 1.3-taugliche TAN-Generatoren haben,
+            // deren Banken aber auch HHD 1.4 beherrschen. In dem Fall wuerde die Bank
+            // HITANS/HKTAN/HITAN in Segment-Version 5 machen, was in der Regel dazu fuehren
+            // wird, dass HHD 1.4 zur Anwendung kommt. Das bewirkt, dass ein Flicker-Code
+            // erzeugt wird, der vom TAN-Generator des Users gar nicht lesbar ist, da dieser
+            // kein HHD 1.4 beherrscht. Mit dem folgenden Parameter kann die Maximal-Version
+            // des HITANS-Segments nach oben begrenzt werden, so dass z.Bsp. HITANS5 ausgefiltert
+            // wird.
+            int maxAllowedVersion = Integer.parseInt(HBCIUtils.getParam("kernel.gv.HITANS.segversion.max","0"));
 
             for (Enumeration e=p.propertyNames();e.hasMoreElements();) {
                 String key=(String)e.nextElement();
@@ -100,12 +111,45 @@ public abstract class AbstractPinTanPassport
                 if (key.startsWith("Params")) {
                     String subkey=key.substring(key.indexOf('.')+1);
                     if (subkey.startsWith("TAN2StepPar")) {
+                      
+                        // willuhn 2011-05-13 Wir brauchen die Segment-Version, weil mittlerweile TAN-Verfahren
+                        // mit identischer Sicherheitsfunktion in unterschiedlichen Segment-Versionen auftreten koennen
+                        // Wenn welche mehrfach vorhanden sind, nehmen wir nur das aus der neueren Version
+                        int segVersion = Integer.parseInt(subkey.substring(11,12));
+                        
                         subkey=subkey.substring(subkey.indexOf('.')+1);
                         if (subkey.startsWith("ParTAN2Step") &&
                                 subkey.endsWith(".secfunc"))
                         {
-                            String     secfunc=p.getProperty(key);
+                            // willuhn 2011-06-06 Segment-Versionen ueberspringen, die groesser als die max. zulaessige sind
+                            if (maxAllowedVersion > 0 && segVersion > maxAllowedVersion)
+                            {
+                              HBCIUtils.log("skipping segversion " + segVersion + ", larger than allowed version " + maxAllowedVersion, HBCIUtils.LOG_INFO);
+                              continue;
+                            }
+
+                            String secfunc=p.getProperty(key);
+
+                            // willuhn 2011-05-13 Checken, ob wir das Verfahren schon aus einer aktuelleren Segment-Version haben
+                            Properties prev = (Properties) twostepMechanisms.get(secfunc);
+                            if (prev != null)
+                            {
+                              // Wir haben es schonmal. Mal sehen, welche Versionsnummer es hat
+                              int prevVersion = Integer.parseInt(prev.getProperty("segversion"));
+                              if (prevVersion > segVersion)
+                              {
+                                HBCIUtils.log("found another twostepmech " + secfunc + " in segversion " + segVersion + ", allready have one in segversion " + prevVersion + ", ignoring segversion " + segVersion, HBCIUtils.LOG_DEBUG);
+                                continue;
+                              }
+                            }
+                            
                             Properties entry=new Properties();
+                            
+                            // willuhn 2011-05-13 Wir merken uns die Segment-Version in dem Zweischritt-Verfahren
+                            // Daran koennen wir erkennen, ob wir ein mehrfach auftretendes
+                            // Verfahren ueberschreiben koennen oder nicht.
+                            entry.put("segversion",Integer.toString(segVersion));
+
                             String     paramHeader=key.substring(0,key.lastIndexOf('.'));
                             // Params_x.TAN2StepParY.ParTAN2StepZ.TAN2StepParamsX_z
 
@@ -257,6 +301,11 @@ public abstract class AbstractPinTanPassport
             for (Enumeration e=bpd.propertyNames();e.hasMoreElements();) {
                 String key=(String)e.nextElement();
                 
+                // TODO: willuhn 2011-05-13: Das nimmt einfach den ersten gefundenen Parameter, liefert
+                // jedoch faelschlicherweise false, wenn das erste gefundene kein Einschritt-Verfahren ist
+                // Hier muesste man durch alle iterieren und dann true liefern, wenn wenigstens
+                // eines den Wert "J" hat.
+
                 // p.getProperty("Params_x.TAN2StepParY.ParTAN2StepZ.can1step")
                 if (key.startsWith("Params")) {
                     String subkey=key.substring(key.indexOf('.')+1);
@@ -484,11 +533,6 @@ public abstract class AbstractPinTanPassport
         return false;
     }
     
-    public boolean needDigKey()
-    {
-        return false;
-    }
-    
     public boolean needUserSig()
     {
         return true;
@@ -512,11 +556,6 @@ public abstract class AbstractPinTanPassport
         return true;
     }
     
-    public boolean hasInstDigKey()
-    {
-        return false;
-    }
-    
     public boolean hasMySigKey()
     {
         return true;
@@ -536,11 +575,6 @@ public abstract class AbstractPinTanPassport
     }
     
     public HBCIKey getInstEncKey()
-    {
-        return null;
-    }
-    
-    public HBCIKey getInstDigKey()
     {
         return null;
     }
@@ -576,21 +610,6 @@ public abstract class AbstractPinTanPassport
     public String getInstEncKeyVersion()
     {
         return "0";
-    }
-
-    public String getInstDigKeyName()
-    {
-        return "";
-    }
-
-    public String getInstDigKeyNum()
-    {
-        return "";
-    }
-
-    public String getInstDigKeyVersion()
-    {
-        return "";
     }
 
     public String getMySigKeyName()
@@ -699,11 +718,6 @@ public abstract class AbstractPinTanPassport
         return Sig.HASHALG_RIPEMD160;
     }
     
-    public void setInstDigKey(HBCIKey key)
-    {
-        // gibt es bei PinTan nicht
-    }
-
     public void setInstSigKey(HBCIKey key)
     {
     }
@@ -891,6 +905,18 @@ public abstract class AbstractPinTanPassport
             for (Enumeration e=bpd.propertyNames();e.hasMoreElements();) {
                 String key=(String)e.nextElement();
                 
+                // TODO: willuhn 2011-05-13: Das nimmt einfach das Hash-Verfahren
+                // aus dem ersten gefundenen Element. HITANS kann inzwischen
+                // aber mehrfach auftreten. muss es von genau dem aktuell gewaehlten
+                // genommen werden.
+                // Hier muesste man vermutlich stattdessen folgendes machen
+
+                // Properties props = getCurrentSecMechInfo();
+                // String version = props.getProperty("segversion");
+                // Und dann nicht subkey.startsWith("TAN2StepPar") sondern
+                // subkey.startsWith("TAN2StepPar" + version)
+                // Muesste man aber noch testen
+                
                 // p.getProperty("Params_x.TAN2StepParY.ParTAN2StepZ.can1step")
                 if (key.startsWith("Params")) {
                     String subkey=key.substring(key.indexOf('.')+1);
@@ -917,9 +943,10 @@ public abstract class AbstractPinTanPassport
             
             HBCIUtils.log("afterCustomDialogInitHook: patching message queues for twostep method",HBCIUtils.LOG_DEBUG);
             
-            HBCIHandler handler=(HBCIHandler)getParentHandlerData();
-            Properties  secmechInfo=getCurrentSecMechInfo();
-            String      process=secmechInfo.getProperty("process");
+            HBCIHandler handler     = (HBCIHandler)getParentHandlerData();
+            Properties  secmechInfo = getCurrentSecMechInfo();
+            String      segversion  = secmechInfo.getProperty("segversion");
+            String      process     = secmechInfo.getProperty("process");
             
             List msgs=dialog.getMessages();
             List new_msgs=new ArrayList();
@@ -935,7 +962,7 @@ public abstract class AbstractPinTanPassport
                 for (Iterator j=msg_tasks.iterator();j.hasNext();) {
                     HBCIJobImpl task=(HBCIJobImpl)j.next();
                     String      segcode=task.getHBCICode();
-                    
+
                     if (getPinTanInfo(segcode).equals("J")) {
                         // es handelt sich um einen tan-pflichtigen task
                         HBCIUtils.log("found task that requires a TAN: "+segcode+" - have to patch message queue",HBCIUtils.LOG_DEBUG);
@@ -947,9 +974,39 @@ public abstract class AbstractPinTanPassport
                             // neue msg erzeugen
                             additional_msg_tasks=new ArrayList();
 
-                            HBCIJob hktan=handler.newJob("TAN2Step");
+                            GVTAN2Step hktan = (GVTAN2Step) handler.newJob("TAN2Step");
+                            
+                            // muessen wir explizit setzen, damit wir das HKTAN in der gleichen Version
+                            // schicken, in der das HITANS kam.
+                            hktan.setSegVersion(segversion);
+                            
                             hktan.setParam("process",process);
                             hktan.setParam("notlasttan","N");
+                            
+                            // willuhn 2011-05-16
+                            // Siehe FinTS_3.0_Security_Sicherheitsverfahren_PINTAN_Rel_20101027_final_version.pdf, Seite 58
+                            int hktanVersion = Integer.parseInt(hktan.getSegVersion());
+                            if (hktanVersion >= 5)
+                            {
+                              // Bis HKTAN4/hhd1.3 wurde das noch als Challenge-Parameter uebermittelt. Jetzt hat es einen
+                              // eigenen Platz in den Job-Parametern
+                              hktan.setParam("ordersegcode",task.getHBCICode());
+
+                              // Zitat aus HITANS5: Diese Funktion ermöglicht das Sicherstellen einer gültigen Kontoverbindung
+                              // z. B. für die Abrechnung von SMS-Kosten bereits vor Erzeugen und Versenden einer
+                              // (ggf. kostenpflichtigen!) TAN.
+                              //  0: Auftraggeberkonto darf nicht angegeben werden
+                              //  2: Auftraggeberkonto muss angegeben werden, wenn im Geschäftsvorfall enthalten
+                              if (secmechInfo.getProperty("needorderaccount","").equals("2"))
+                              {
+                                Konto k = task.getOrderAccount();
+                                if (k != null)
+                                  hktan.setParam("orderaccount",k);
+                                else
+                                  HBCIUtils.log("orderaccount needed, but not found in " + task.getHBCICode(),HBCIUtils.LOG_DEBUG);
+                              }
+                            }
+                            
                             // TODO: das für mehrfachsignaturen
                             // hktan.setParam("notlasttan","J");
                             
@@ -968,7 +1025,7 @@ public abstract class AbstractPinTanPassport
                                 String provider=null;
                                 if (orderhashmode.equals("1")) {
                                     alg="RIPEMD160";
-                                    provider="HBCIProvider";
+                                    provider="CryptAlgs4Java";
                                 } else if (orderhashmode.equals("2")) {
                                     alg="SHA-1";
                                 }
@@ -987,62 +1044,15 @@ public abstract class AbstractPinTanPassport
                             // hktan.setParam("listidx","");
                             
                             // wenn needchallengeklass gesetzt ist:
-                            if (secmechInfo.getProperty("needchallengeklass","N").equals("J")) {
-                                HBCIUtils.log("we are in PV #1, and a challenge klass is required",
-                                                HBCIUtils.LOG_DEBUG);
-                                ChallengeInfo cinfo=ChallengeInfo.getInstance();
-                                // TODO: verwendete spezifikation parametrisieren
-                                String        spec="hhd12";
-                                
-                                String   klass=cinfo.getKlassBySegCode(segcode,spec);
-                                HBCIUtils.log("using challenge klass "+klass, HBCIUtils.LOG_DEBUG2);
-                                hktan.setParam("challengeklass",klass);
-
-                                // die als challenge-param einzustellenden werte aus der challenge-info holen
-                                String[] param_paths=cinfo.getParamPathsBySegCode(segcode,spec);
-                                int      param_count=param_paths.length;
-                                for (int p=0;p<param_count;p++) {
-                                        String path=param_paths[p];
-                                        String value=task.getChallengeParam(path);
-                                        HBCIUtils.log("adding challenge parameter "+path+" = "+value, HBCIUtils.LOG_DEBUG2);
-                                        hktan.setParam("ChallengeKlassParam"+(p+1),value);
-                                }
-                                
-                                // wenn auch noch der betrag aus dem auftrag in die challenge-parameter
-                                // eingestellt werden soll, machen wir das (sofern ein wert existiert)
-                                if (secmechInfo.getProperty("needchallengevalue","N").equals("J")) {
-                                        HBCIUtils.log("we also have to add the value as challenge parameter",
-                                                        HBCIUtils.LOG_DEBUG);
-                                        
-                                        // pfad zum wert holen
-                                        String path=cinfo.getValuePathBySegCode(segcode,spec);
-                                        if (path!=null) {
-                                            // es ist tatsächlich der pfad zu einem wert definiert
-                                            String value=task.getChallengeParam(path);
-                                            if (value!=null && value.length()!=0) {
-                                                value=new SyntaxWrt(value,1,0).toString(0);
-
-                                                HBCIUtils.log("adding challenge parameter "+path+" = "+value, 
-                                                        HBCIUtils.LOG_DEBUG2);
-                                                // der an dieser stelle gespeicherte wert ist nicht leer
-                                                hktan.setParam("ChallengeKlassParam"+(param_count+1),value);
-                                            }
-                                        }
-
-                                        // pfad zur währung holen
-                                        path=cinfo.getCurrPathBySegCode(segcode,spec);
-                                        if (path!=null) {
-                                            // es gibt einen währungs-eintrag
-                                            String value=task.getChallengeParam(path);
-                                            if (value!=null && value.length()!=0) {
-                                                // und es gibt auch eine währung
-                                                HBCIUtils.log("adding challenge parameter "+path+" = "+value, 
-                                                        HBCIUtils.LOG_DEBUG2);
-                                                hktan.setParam("ChallengeKlassParam"+(param_count+2),value);
-                                            }
-                                        }
-                                }
+                            if (secmechInfo.getProperty("needchallengeklass","N").equals("J"))
+                            {
+                                HBCIUtils.log("we are in PV #1, and a challenge klass is required",HBCIUtils.LOG_DEBUG);
+                                ChallengeInfo cinfo = ChallengeInfo.getInstance();
+                                cinfo.applyParams(task,hktan,secmechInfo);
                             }
+
+                            // willuhn 2011-05-09: Bei Bedarf noch das TAN-Medium erfragen
+                            applyTanMedia(hktan);
                             
                             // hktan-job zur neuen msg hinzufügen
                             additional_msg_tasks.add(hktan);
@@ -1063,12 +1073,20 @@ public abstract class AbstractPinTanPassport
                             new_msg_tasks.add(task);
                             
                             // dazu noch einen hktan-job hinzufügen
-                            GVTAN2Step hktan1=(GVTAN2Step)handler.newJob("TAN2Step");
+                            GVTAN2Step hktan1 = (GVTAN2Step) handler.newJob("TAN2Step");
+
+                            // muessen wir explizit setzen, damit wir das HKTAN in der gleichen Version
+                            // schicken, in der das HITANS kam.
+                            hktan1.setSegVersion(segversion);
+
                             hktan1.setParam("process","4");
                             // TODO: evtl. listindex ermitteln
                             // hktan1.setParam("listidx","");
                             // TODO: das für mehrfachsignaturen
                             // hktan1.setParam("notlasttan","N");
+
+                            // willuhn 2011-05-09: Bei Bedarf noch das TAN-Medium erfragen
+                            applyTanMedia(hktan1);
                             
                             // den hktan-job zusätzlich zur aktuellen msg hinzufügen
                             new_msg_tasks.add(hktan1);
@@ -1078,7 +1096,12 @@ public abstract class AbstractPinTanPassport
                             additional_msg_tasks=new ArrayList();
                             
                             // HKTAN-job für das einreichen der TAN erzeugen
-                            GVTAN2Step hktan2=(GVTAN2Step)handler.newJob("TAN2Step");
+                            GVTAN2Step hktan2 = (GVTAN2Step) handler.newJob("TAN2Step");
+
+                            // muessen wir explizit setzen, damit wir das HKTAN in der gleichen Version
+                            // schicken, in der das HITANS kam.
+                            hktan1.setSegVersion(segversion);
+
                             hktan2.setParam("process","2");
                             hktan2.setParam("notlasttan","N");
                             // TODO: evtl. listindex ermitteln
@@ -1086,6 +1109,8 @@ public abstract class AbstractPinTanPassport
                             // TODO: das für mehrfachsignaturen
                             // hktan2.setParam("notlasttan","J");
                             
+                            // willuhn 2011-05-09 TAN-Media gibts nur bei Prozess 1,3,4 - also nicht in hktan2
+
                             // hktan-job zur neuen msg hinzufügen
                             additional_msg_tasks.add(hktan2);
                             
@@ -1125,6 +1150,55 @@ public abstract class AbstractPinTanPassport
             msgs.clear();
             msgs.addAll(new_msgs);
         }
+    }
+    
+    /**
+     * Uebernimmt das Rueckfragen und Einsetzen der TAN-Medien-Bezeichung bei Bedarf.
+     * @param hktan der Job, in den der Parameter eingesetzt werden soll.
+     * @param secmechInfo
+     */
+    private void applyTanMedia(GVTAN2Step hktan)
+    {
+      if (hktan == null)
+        return;
+      
+      // Gibts erst ab hhd1.3, siehe
+      // FinTS_3.0_Security_Sicherheitsverfahren_PINTAN_Rel_20101027_final_version.pdf, Kapitel B.4.3.1.1.1
+      // Zitat: Ist in der BPD als Anzahl unterstützter aktiver TAN-Medien ein Wert > 1
+      //        angegeben und ist der BPD-Wert für Bezeichnung des TAN-Mediums erforderlich = 2,
+      //        so muss der Kunde z. B. im Falle des mobileTAN-Verfahrens
+      //        hier die Bezeichnung seines für diesen Auftrag zu verwendenden TAN-
+      //        Mediums angeben.
+      // Ausserdem: "Nur bei TAN-Prozess=1, 3, 4". Das muess aber der Aufrufer pruefen. Ist mir
+      // hier zu kompliziert
+      
+      int hktan_version = Integer.parseInt(hktan.getSegVersion());
+      HBCIUtils.log("hktan_version: " + hktan_version,HBCIUtils.LOG_DEBUG);
+      if (hktan_version >= 3)
+      {
+        Properties  secmechInfo = getCurrentSecMechInfo();
+        
+        // Anzahl aktiver TAN-Medien ermitteln
+        int num        = Integer.parseInt(secmechInfo.getProperty("nofactivetanmedia","0"));
+        String needed  = secmechInfo.getProperty("needtanmedia","");
+        HBCIUtils.log("nofactivetanmedia: " + num + ", needtanmedia: " + needed,HBCIUtils.LOG_DEBUG);
+
+        // Ich hab Mails von Usern erhalten, bei denen die Angabe des TAN-Mediums auch
+        // dann noetig war, wenn nur eine Handy-Nummer hinterlegt war. Daher logen wir
+        // "num" nur, bringen die Abfrage jedoch schon bei num<2 - insofern needed=2.
+        if (needed.equals("2"))
+        {
+          HBCIUtils.log("we have to add the tan media",HBCIUtils.LOG_DEBUG);
+
+          StringBuffer retData=new StringBuffer();
+          HBCIUtilsInternal.getCallback().callback(this,HBCICallback.NEED_PT_TANMEDIA,
+              "*** Enter the name of your TAN media",
+              HBCICallback.TYPE_TEXT,
+              retData);
+          
+          hktan.setParam("tanmedia",retData.toString());
+        }
+      }
     }
 
     public void afterCustomDialogInitHook(HBCIDialog dialog)

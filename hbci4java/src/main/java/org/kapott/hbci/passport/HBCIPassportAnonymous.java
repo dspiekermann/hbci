@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIPassportAnonymous.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: HBCIPassportAnonymous.java,v 1.1 2011/05/04 22:37:43 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -298,11 +298,6 @@ public class HBCIPassportAnonymous
         return false;
     }
     
-    public boolean needDigKey()
-    {
-        return false;
-    }
-    
     public HBCIKey getMyPublicDigKey()
     {
         return null;
@@ -355,8 +350,16 @@ public class HBCIPassportAnonymous
         return false;
     }
     
-    public byte[] sign(byte[] parm1)
+    public byte[] hash(byte[] data)
     {
+        /* the function hash-before-sign has nothing to do here, so we simply
+         * return the original message */
+        return data;
+    }
+    
+    public byte[] sign(byte[] data)
+    {
+        /* no signature at all */
         return new byte[0];
     }
     
@@ -412,21 +415,6 @@ public class HBCIPassportAnonymous
         return "";
     }
     
-    public String getInstDigKeyName()
-    {
-        return "";
-    }
-    
-    public String getInstDigKeyNum()
-    {
-        return "";
-    }
-    
-    public String getInstDigKeyVersion()
-    {
-        return "";
-    }
-    
     public String getHashAlg()
     {
         return "";
@@ -442,11 +430,6 @@ public class HBCIPassportAnonymous
     }
     
     public boolean hasInstEncKey()
-    {
-        return false;
-    }
-    
-    public boolean hasInstDigKey()
     {
         return false;
     }
@@ -469,10 +452,6 @@ public class HBCIPassportAnonymous
     public String getInstEncKeyName()
     {
         return "";
-    }
-    
-    public void setInstDigKey(HBCIKey key)
-    {
     }
     
     public String getInstEncKeyNum()

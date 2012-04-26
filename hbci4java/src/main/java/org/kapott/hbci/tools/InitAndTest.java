@@ -1,5 +1,5 @@
 
-/*  $Id: InitAndTest.java 62 2008-10-22 17:03:26Z kleiner $
+/*  $Id: InitAndTest.java,v 1.1 2011/05/04 22:37:45 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -60,15 +60,17 @@ import org.kapott.hbci.passport.HBCIPassport;
     ist.</p> */
 public final class InitAndTest
 {
-	private static class MyCallback
-		extends HBCICallbackConsole
-	{
-		public synchronized void status(HBCIPassport passport, int statusTag, Object[] o) 
-		{
-			// disable status output
-		}
-		
-	}
+    private static class MyCallback
+        extends HBCICallbackConsole
+    {
+        @Override
+        public synchronized void status(HBCIPassport passport, int statusTag,
+                                        Object[] o)
+        {
+            // disable status output
+        }
+
+    }
 	
     private static HBCIPassport passport;
     private static HBCIHandler  hbciHandle;
@@ -124,6 +126,7 @@ public final class InitAndTest
         System.out.println(descr);
         System.out.println("press ENTER to accept the default; '-' to set no value for this parameter");
         System.out.print(paramName+" ["+def+"]: ");
+        System.out.flush();
         
         String value=new BufferedReader(new InputStreamReader(System.in)).readLine();
         
@@ -143,6 +146,7 @@ public final class InitAndTest
         throws IOException
     {
         readParam("client.connection.localPort",null,"local tcp-port to be used for outgoing connections");
+        readParam("comm.standard.socks.server",null,"SOCKS server to be used for outgoing connections (will be ignored for PIN/TAN)");
         readParam("log.loglevel.default","5","loglevel for HBCI4Java-messages (from 0(no logging) to 5(really heavy)");
         readParam("kernel.rewriter",HBCIUtils.getParam("kernel.rewriter"),"rewriter modules to be activated");
     }
@@ -150,7 +154,7 @@ public final class InitAndTest
     private static void readPassportParams()
         throws IOException
     {
-        readParam("client.passport.default",null,"enter type of media you have (Anonymous, DDV, RDHNew, RDH (deprecated), PinTan, SIZRDHFile or RDH2File)");
+        readParam("client.passport.default",null,"enter type of media you have (Anonymous, DDV, RDHNew, RDH (deprecated), PinTan, SIZRDHFile or RDHXFile)");
         String type=HBCIUtils.getParam("client.passport.default","");
         
         if (type.equals("Anonymous")) {
@@ -183,9 +187,9 @@ public final class InitAndTest
             readParam("client.passport.SIZRDHFile.filename","secret.key","filename of SIZ-RDH-keyfile to be used. MAKE A BACKUP OF THIS FILE BEFORE USE!");
             readParam("client.passport.SIZRDHFile.libname","/usr/lib/libhbci4java-sizrdh.so","filename of native library for accessing SIZ RDH files");
             readParam("client.passport.SIZRDHFile.init","1","never change this value!");
-        } else if (type.equals("RDH2File")) {
-            readParam("client.passport.RDH2File.filename","secret.key","filename of SIZ-RDH2-keyfile to be used. MAKE A BACKUP OF THIS FILE BEFORE USE!");
-            readParam("client.passport.RDH2File.init","1","never change this value!");
+        } else if (type.equals("RDHXFile")) {
+            readParam("client.passport.RDHXFile.filename","secret.key","filename of SIZ-RDH2-keyfile to be used. MAKE A BACKUP OF THIS FILE BEFORE USE!");
+            readParam("client.passport.RDHXFile.init","1","never change this value!");
         }
     }
     

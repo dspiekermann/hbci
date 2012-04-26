@@ -1,5 +1,5 @@
 
-/*  $Id: HBCIKernelImpl.java 92 2008-11-18 15:04:36Z kleiner $
+/*  $Id: HBCIKernelImpl.java,v 1.1 2011/05/04 22:37:47 willuhn Exp $
 
     This file is part of HBCI4Java
     Copyright (C) 2001-2008  Stefan Palme
@@ -23,7 +23,6 @@ package org.kapott.hbci.manager;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -42,7 +41,6 @@ import org.kapott.hbci.protocol.MSG;
 import org.kapott.hbci.protocol.factory.MSGFactory;
 import org.kapott.hbci.rewrite.Rewrite;
 import org.kapott.hbci.security.Crypt;
-import org.kapott.hbci.security.HBCIProvider;
 import org.kapott.hbci.security.Sig;
 import org.kapott.hbci.security.factory.CryptFactory;
 import org.kapott.hbci.security.factory.SigFactory;
@@ -87,10 +85,6 @@ public final class HBCIKernelImpl implements HBCIKernel
         try {
             gen=new MsgGen(syntaxStream);
             currentMsgName=null;
-
-            if (Security.getProvider("HBCIProvider")==null) {
-                Security.addProvider(new HBCIProvider());
-            }
         } catch (Exception e) {
             throw new HBCI_Exception(HBCIUtilsInternal.getLocMsg("EXCMSG_MSGGEN_INIT"),e);
         }
